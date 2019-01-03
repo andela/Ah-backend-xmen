@@ -1,4 +1,4 @@
-Authors Haven - A Social platform for the creative at heart and mind.
+Authors Haven - A Social platform for the creative at heart.
 =======
 
 ## Vision
