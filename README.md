@@ -1,6 +1,8 @@
 Authors Haven - A Social platform for the creative at heart.
 =======
 
+[![Coverage Status](https://coveralls.io/repos/github/andela/Ah-backend-xmen/badge.svg?branch=develop)](https://coveralls.io/github/andela/Ah-backend-xmen?branch=develop)
+
 ## Vision
 Create a community of like minded authors to foster inspiration and innovation
 by leveraging the modern web.
