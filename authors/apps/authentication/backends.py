@@ -7,7 +7,9 @@ from rest_framework import authentication, exceptions
 # from .models import User
 
 """Configure JWT Here"""
+
+
 class JWTAuthentication(authentication.BaseAuthentication):
-    
+
     def authenticate(self, request):
         pass
