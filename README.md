@@ -1,7 +1,9 @@
 Authors Haven - A Social platform for the creative at heart.
 =======
 
+[![Build Status](https://travis-ci.org/andela/Ah-backend-xmen.svg?branch=develop)](https://travis-ci.org/andela/Ah-backend-xmen)
 [![Coverage Status](https://coveralls.io/repos/github/andela/Ah-backend-xmen/badge.svg?branch=develop)](https://coveralls.io/github/andela/Ah-backend-xmen?branch=develop)
+[![Maintainability](https://api.codeclimate.com/v1/badges/1c60430e22798db337c2/maintainability)](https://codeclimate.com/github/andela/Ah-backend-xmen/maintainability)
 
 ## Vision
 Create a community of like minded authors to foster inspiration and innovation
@@ -392,7 +394,4 @@ No additional parameters required
 ### Get Tags
 
 `GET /api/tags`
-
-
-
 
