@@ -1,0 +1,22 @@
+language: python
+python:
+    - "3.6.5"
+
+services:
+    - postgres
+
+# require travis to first install dependencies
+install:
+    - pip install -r requirements.txt
+
+before-script:
+    - psql -c "CREATE DATABASE authorstestdb;" -U postgres
+    - python manage.py makemigrations
+    - python manage.py migrate
+
+script:
+    - python manage.py test
+    - coverage run --source="authors" manage.py test&&coverage report -m
+
+after_success:
+    - coveralls
