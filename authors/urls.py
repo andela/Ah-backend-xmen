@@ -38,8 +38,8 @@ urlpatterns = [
 
     path('api/', include(('authors.apps.authentication.urls',
                           'authentication'), namespace='authentication')),
-    path('api/documentation/', schema_view.with_ui('swagger',
-                                                   cache_timeout=0), name='api_documentation'),
+    path('api/documentation/', schema_view.with_ui('swagger', cache_timeout=0), name='api_documentation'),
+    path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles'))
 ]
 
 if settings.DEBUG:

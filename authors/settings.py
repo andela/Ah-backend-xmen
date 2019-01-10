@@ -1,6 +1,7 @@
 import os
 from decouple import config
 import dj_database_url
+import cloudinary
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -35,9 +36,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'mailer',
     'drf_yasg',
+    'cloudinary_storage',
+    'cloudinary',
+    
 
     'authors.apps.authentication',
     'authors.apps.core',
+    'authors.apps.profiles'
 ]
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
@@ -128,6 +133,21 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static', 'production')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+MEDIA_URL = '/media/'
+
+
+# MEDIA FILES WITH CLOUDINARY
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUD_NAME'),
+    'API_KEY': config('API_KEY'),
+    'API_SECRET': config('API_SECRET'),
+    'SECURE': True,
+    'MAGIC_FILE_PATH': 'magic',
+    'PREFIX': MEDIA_URL
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
+
 
 # Cross Origin Resource Sharing
 CORS_ORIGIN_WHITELIST = (
