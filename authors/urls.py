@@ -17,12 +17,28 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework.permissions import AllowAny
 
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Authors Haven",
+      default_version='v1',
+      description="A social platform for the creative at heart.",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="contact@snippets.local"),
+      license=openapi.License(name="BSD License"),
+   ),
+   permission_classes=(AllowAny,),
+)
 urlpatterns = [
+    
     path('admin/', admin.site.urls),
 
     path('api/', include(('authors.apps.authentication.urls',
                           'authentication'), namespace='authentication')),
+    path('api/documentation/', schema_view.with_ui('swagger', cache_timeout=0), name='api_documentation'),
 ]
 
 if settings.DEBUG:
