@@ -18,7 +18,6 @@ class UserJSONRenderer(JSONRenderer):
             # rendering errors.
             return super(UserJSONRenderer, self).render(data)
 
-
         # Finally, we can render our data under the "user" namespace.
         return json.dumps({
             'user': data

@@ -16,7 +16,7 @@ before-script:
 
 script:
     - python manage.py test
-    - coverage run --source="authors" manage.py test&&coverage report -m
+    - coverage run --omit="*tests*,*init*,*migrations*,*wsgi*" --source="authors" manage.py test&&coverage report -m
 
 after_success:
     - coveralls
