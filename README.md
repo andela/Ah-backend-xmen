@@ -11,6 +11,56 @@ by leveraging the modern web.
 
 ---
 
+## Getting started
+
+Open up your terminal and navigate to your preferred storage point and then clone the repository to your computer by typing this command
+```
+    git clone https://github.com/andela/Ah-backend-xmen.git
+``` 
+
+Navigate into the Ah-backend-xmen folder created after the clone and in it create a virtual environment with your preferred name by typing
+```
+    cd Ah-backend-xmen
+
+    virtualenv yourpreferredname
+```
+
+Activate your virtual environment
+```
+    <!-- for ubuntu or mac use this command -->
+    source yourpreferredname/bin/activate
+
+    <!-- for windows use this command -->
+    envn\Scripts\activate
+```
+
+Install the dependencies for the application found in the requirements file
+```
+  pip install -r requirements.txt
+```
+
+Install PostgreSQL and load the psql shell and in it create a database with your preferred name by typing this command
+```
+    psql CREATE DATABASE yourpreferredname
+```
+
+Create a .env file and populate it with your database credentials following the sample_env.txt file in the project
+
+Run the migrations by typing this command
+```
+  python manage.py migrate
+```
+This will help you in populating your database
+
+Run the application
+```
+    python manage.py runserver
+```
+
+You can use Postman to checkout the functionality of the api endpoints, you can download here:
+- [Postman](https://www.getpostman.com/apps) - An API testing tool for developers
+
+
 ## API Spec
 The preferred JSON object to be returned by the API should be structured as follows:
 
