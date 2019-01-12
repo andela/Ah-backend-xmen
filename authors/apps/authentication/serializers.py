@@ -7,6 +7,7 @@ from .models import User
 from authors.apps.utils.validators.validation_helpers import validate_password
 from authors.apps.utils.messages import error_messages
 
+
 class RegistrationSerializer(serializers.ModelSerializer):
     """Serializers registration requests and creates a new user."""
 
@@ -158,28 +159,32 @@ class LoginSerializer(serializers.Serializer):
             'token': user.token
         }
 
+
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=255, required=True)
 
-    def validate(self,data):
-        
-        email = data.get('email',None)
+    def validate(self, data):
+
+        email = data.get('email', None)
 
         if email is None:
-            raise serializers.ValidationError(error_messages['field required'].format('Email'))
-        
+            raise serializers.ValidationError(
+                error_messages['field required'].format('Email'))
+
         return {
             'email': email
         }
 
-class PasswordResetSerializer(serializers.Serializer):
-     password = serializers.CharField(max_length=128, required=True)
 
-     def validate(self,data):
-        new_password = data.get('password',None)
+class PasswordResetSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=128, required=True)
+
+    def validate(self, data):
+        new_password = data.get('password', None)
         return {
             'password': validate_password(new_password)
         }
+
 
 class UserSerializer(serializers.ModelSerializer):
     """Handles serialization and deserialization of User objects."""
