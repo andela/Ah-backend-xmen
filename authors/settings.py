@@ -33,12 +33,20 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'rest_framework',
+    'mailer',
     'drf_yasg',
 
     'authors.apps.authentication',
     'authors.apps.core',
-    'authors.apps.profiles',
 ]
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+
+PASSWORD_RESET_TIMEOUT_DAYS = 2
 
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',

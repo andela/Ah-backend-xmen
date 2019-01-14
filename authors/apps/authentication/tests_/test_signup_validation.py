@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from authors.apps.authentication.models import User
-
+from .test_data import responses
 from .test_base_class import BaseTestClass
 
 
@@ -24,25 +24,11 @@ class TestSignupValidation(BaseTestClass):
         Asserts: 
             - ("Password must be longer than 8 characters."): for very short passwords
         """
-        expected_response = {
-            "errors": {
-                "password": [
-                    "Password must be longer than 8 characters."
-                ]
-            }
-        }
+        expected_response = responses['password_is_too_short']
         resp = self.client.post(reverse('authentication:signup'),
-                                content_type='application/json', data=json.dumps({
-                                    "user":{
-                                        "username":"jake",
-                                        "email":"jake@gmail.com",
-                                        "password":"jake"
-                                    }
-                                }))
+                                content_type='application/json', data=json.dumps(self.user_data_short_password))
         self.assertDictEqual(resp.data, expected_response)
-        self.assertIn(
-            "Password must be longer than 8 characters.", str(resp.data))
-
+       
     def test_signup_with_invalid_password_fails(self):
         """ This function tests whether the non alpahnumeric password input from the user raises a ValidationError
 
@@ -50,25 +36,11 @@ class TestSignupValidation(BaseTestClass):
             - ("Password should at least contain a number, capital and small letter.")
 
         """
-        expected_response = {
-            "errors": {
-                "password": [
-                    "Password should at least contain a number, capital and small letter."
-                ]
-            }
-        }
+        expected_response = responses['password_is_weak']
         resp = self.client.post(reverse('authentication:signup'),
-                                content_type='application/json', data=json.dumps({
-                                    "user":{
-                                        "username":"jake",
-                                        "email":"jake@gmail.com",
-                                        "password":"jakejake"
-                                    }
-                                }))
+                                content_type='application/json', data=json.dumps(self.user_data_weak_password))
         self.assertDictEqual(resp.data, expected_response)
-        self.assertIn(
-            "Password should at least contain a number, capital and small letter.", str(resp.data))
-
+      
 
     def test_signup_with_existing_email_fails(self):
         """ This function tests that a new user cannot sign up with an existing email without raising a ValidationError
@@ -76,21 +48,14 @@ class TestSignupValidation(BaseTestClass):
         Asserts:
             - "Email already exists."
         """
-        expected_response = {
-            "errors": {
-                "email": [
-                    "Email already exists."
-                ]
-            }
-        }
+        expected_response = responses['email_already_exists']
+
         self.client.post(reverse('authentication:signup'),
                                 content_type='application/json', data=json.dumps(self.user_data))
         resp=self.client.post(reverse('authentication:signup'),
                                 content_type='application/json', data=json.dumps(self.same_email_user))
         self.assertDictEqual(resp.data, expected_response)
-        self.assertIn(
-             "Email already exists.", str(resp.data))
-
+       
 
     def test_signup_with_existing_username_fails(self):
         """ This function tests that a new user cannot sign up with an existing username without raising a ValidationError
@@ -98,17 +63,10 @@ class TestSignupValidation(BaseTestClass):
         Asserts:
             - "Username already exists."
         """
-        expected_response = {
-            "errors": {
-                "username": [
-                    "Username already exists."
-                ]
-            }
-        }
+        expected_response = responses['username_already_exists']
         self.client.post(reverse('authentication:signup'),
                                 content_type='application/json', data=json.dumps(self.user_data))
         resp=self.client.post(reverse('authentication:signup'),
                                 content_type='application/json', data=json.dumps(self.same_username_user))
         self.assertDictEqual(resp.data, expected_response)
-        self.assertIn(
-           "Username already exists.", str(resp.data))
+       
