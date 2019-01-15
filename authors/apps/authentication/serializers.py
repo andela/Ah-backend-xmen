@@ -1,6 +1,8 @@
-from django.contrib.auth import authenticate
+import re
 
+from django.contrib.auth import authenticate
 from rest_framework import serializers
+
 
 from .models import User
 
@@ -12,9 +14,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
     # characters, and can not be read by the client.
     password = serializers.CharField(
         max_length=128,
-        min_length=8,
         write_only=True
     )
+    email = serializers.EmailField()
+    username = serializers.CharField()
 
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
@@ -25,10 +28,77 @@ class RegistrationSerializer(serializers.ModelSerializer):
         # or response, including fields specified explicitly above.
         fields = ['email', 'username', 'password']
 
+    def validate_password(self, password):
+        """ This function validates the password input by a new user signing up
+
+            It ensures that the password length is longer than 8 characters to be considered valid.
+            The password should also contain at least a letter and number. 
+
+        Args: 
+            password (str): This is password string received from user
+
+        Returns: 
+            Returns the validated password
+
+        Raises: 
+            ValidationError: 
+            - ("Password must be longer than 8 characters."): for very short passwords
+            - ("Password should at least contain a number, capital and small letter."): for non alphanumeric paaswords  
+        
+        """
+        if len(password) < 8: 
+            raise serializers.ValidationError("Password must be longer than 8 characters.")
+        elif re.search(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)", password) is None:
+            raise serializers.ValidationError("Password should at least contain a number, capital and small letter.")
+        return password
+
+    def validate_email(self, email):
+        """ This function validates the email input by a new user signing up
+
+            It ensures that the email being used for signing up was not already used by another user.
+
+        Args: 
+            email(str): This is the email string received from user
+
+        Returns: 
+            Returns the validated email
+
+        Raises: 
+            ValidationError: 
+            - "Email already exists." : for an already existing email
+
+        """
+        
+        check_email= User.objects.filter(email=email)
+        if check_email.exists():
+            raise serializers.ValidationError("Email already exists.")
+        return email
+
+    def validate_username(self, username):
+        """ This function validates the username input by a new user signing up
+
+            It ensures that the username being used for signing up was not already used by another user.
+
+        Args: 
+            username (str): username
+
+        Returns: 
+            Returns the validated username
+
+        Raises: 
+            ValidationError: 
+            - "Username already exists." : for an already existing username
+
+        """
+        
+        check_username= User.objects.filter(username=username)
+        if check_username.exists():
+            raise serializers.ValidationError("Username already exists.")
+        return username
+       
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
         return User.objects.create_user(**validated_data)
-
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)

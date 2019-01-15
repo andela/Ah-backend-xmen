@@ -12,9 +12,8 @@ class TestUserEndPoints(BaseTestClass):
         resp = self.client.post(reverse('authentication:signup'),
                                 content_type='application/json', data=json.dumps(self.user_data))
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        self.assertIn('Jacob', str(resp.data))
 
-    def test_login_user_with_valid_data(self):
+    def test_login_user_with_valid_data_succeeds(self):
         resp = self.client.post(reverse('authentication:login'), content_type='application/json',
                                 data=json.dumps(self.verified_user_login_credentials))
         self.assertEqual(resp.status_code, 200)
