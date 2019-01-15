@@ -21,12 +21,13 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
+    token = serializers.CharField(max_length=255, read_only=True)
 
     class Meta:
         model = User
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
-        fields = ['email', 'username', 'password']
+        fields = ['email', 'username', 'password', 'token']
 
     def validate_password(self, password):
         """ This function validates the password input by a new user signing up
@@ -44,7 +45,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             ValidationError: 
             - ("Password must be longer than 8 characters."): for very short passwords
             - ("Password should at least contain a number, capital and small letter."): for non alphanumeric paaswords  
-        
+
         """
         return validate_password(password)
 
@@ -64,8 +65,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
             - "Email already exists." : for an already existing email
 
         """
-        
-        check_email= User.objects.filter(email=email)
+
+        check_email = User.objects.filter(email=email)
         if check_email.exists():
             raise serializers.ValidationError("Email already exists.")
         return email
@@ -86,20 +87,22 @@ class RegistrationSerializer(serializers.ModelSerializer):
             - "Username already exists." : for an already existing username
 
         """
-        
-        check_username= User.objects.filter(username=username)
+
+        check_username = User.objects.filter(username=username)
         if check_username.exists():
             raise serializers.ValidationError("Username already exists.")
         return username
-       
+
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
         return User.objects.create_user(**validated_data)
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
     username = serializers.CharField(max_length=255, read_only=True)
     password = serializers.CharField(max_length=128, write_only=True)
+    token = serializers.CharField(max_length=255, read_only=True)
 
     def validate(self, data):
         # The `validate` method is where we make sure that the current
@@ -152,7 +155,7 @@ class LoginSerializer(serializers.Serializer):
         return {
             'email': user.email,
             'username': user.username,
-
+            'token': user.token
         }
 
 class PasswordResetRequestSerializer(serializers.Serializer):
@@ -193,7 +196,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password')
+        fields = ('email', 'username', 'password', 'token',)
 
         # The `read_only_fields` option is an alternative for explicitly
         # specifying the field with `read_only=True` like we did for password
@@ -202,6 +205,7 @@ class UserSerializer(serializers.ModelSerializer):
         # password field, we needed to specify the `min_length` and
         # `max_length` properties too, but that isn't the case for the token
         # field.
+        read_only_fields = ('token',)
 
     def update(self, instance, validated_data):
         """Performs an update on a User."""

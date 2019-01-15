@@ -15,7 +15,7 @@ class TestSignupValidation(BaseTestClass):
     - Registration with a very short password
     - Registration with non alphanumeric password
     - Registration with an already existing email
-    
+
     """
 
     def test_signup_with_short_password_fails(self):
@@ -51,8 +51,8 @@ class TestSignupValidation(BaseTestClass):
         expected_response = responses['email_already_exists']
 
         self.client.post(reverse('authentication:signup'),
-                                content_type='application/json', data=json.dumps(self.user_data))
-        resp=self.client.post(reverse('authentication:signup'),
+                         content_type='application/json', data=json.dumps(self.user_data))
+        resp = self.client.post(reverse('authentication:signup'),
                                 content_type='application/json', data=json.dumps(self.same_email_user))
         self.assertDictEqual(resp.data, expected_response)
        
@@ -65,8 +65,8 @@ class TestSignupValidation(BaseTestClass):
         """
         expected_response = responses['username_already_exists']
         self.client.post(reverse('authentication:signup'),
-                                content_type='application/json', data=json.dumps(self.user_data))
-        resp=self.client.post(reverse('authentication:signup'),
+                         content_type='application/json', data=json.dumps(self.user_data))
+        resp = self.client.post(reverse('authentication:signup'),
                                 content_type='application/json', data=json.dumps(self.same_username_user))
         self.assertDictEqual(resp.data, expected_response)
        

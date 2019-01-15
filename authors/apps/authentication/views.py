@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User
 from authors.apps.core.models import PasswordResetManager
+from .backends import JWTAuthentication
+
 from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
@@ -33,7 +35,6 @@ class RegistrationAPIView(GenericAPIView):
 
 class LoginAPIView(GenericAPIView):
     permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
 
     def post(self, request):
@@ -45,13 +46,11 @@ class LoginAPIView(GenericAPIView):
         # handles everything we need.
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({'token': serializer.data.get('token')}, status=status.HTTP_200_OK)
 
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
-    permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
+    permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer
 
     def retrieve(self, request, *args, **kwargs):
@@ -60,7 +59,12 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         # can be JSONified and sent to the client.
         serializer = self.serializer_class(request.user)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            {
+                'username': serializer.data.get('username'),
+                'email': serializer.data.get('email')
+            }, status=status.HTTP_200_OK
+        )
 
     def update(self, request, *args, **kwargs):
         serializer_data = request.data.get('user', {})
