@@ -31,7 +31,12 @@ class ArticleUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     """ Updates and deletes an article instance """
     serializer_class = ArticleUpdateSerializer
     permission_class = (IsAuthenticated,)
+    renderer_classes = (ArticleJSONRenderer,)
 
+    def get_serializer_context(self):
+        return {
+            'request': self.request
+        }
     def get_object(self):
         slug = self.kwargs.get('slug')
         return get_object_or_404(Article, slug=slug)
