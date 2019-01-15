@@ -38,10 +38,14 @@ urlpatterns = [
 
     path('api/', include(('authors.apps.authentication.urls',
                           'authentication'), namespace='authentication')),
-    path('api/documentation/', schema_view.with_ui('swagger', cache_timeout=0), name='api_documentation'),
+    path('api/documentation/', schema_view.with_ui('swagger',
+                                                   cache_timeout=0), name='api_documentation'),
+    path('api/articles/', include(('authors.apps.articles.urls','articles'), namespace='articles')),
     path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles'))
+
+
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL,
-                          document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

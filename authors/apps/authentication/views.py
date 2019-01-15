@@ -179,5 +179,5 @@ class ResetPasswordAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         user.set_password(serializer.data.get('password'))
         user.save()
-        return Response({"password-reset":"Your password has been updated"} , status=status.HTTP_200_OK)
+        return Response({"password-reset":"Your password has been updated"}, status=status.HTTP_200_OK)
         

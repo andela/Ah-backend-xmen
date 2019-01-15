@@ -19,3 +19,11 @@ def if_owner_permission(request_obj, **kwargs):
     if kwargs.get("username") != request_obj.user.username:
         raise PermissionDenied(
             error_messages.get('permission_denied'))
+
+
+def check_if_is_author(article, request_obj):
+        if str(article.author) != str(request_obj.user.username):
+            raise PermissionDenied(
+                error_messages['permission_denied']
+            )
+        return False
