@@ -2,10 +2,10 @@ import re
 
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-
-
+import re
 from .models import User
-
+from authors.apps.utils.validators.validation_helpers import validate_password
+from authors.apps.utils.messages import error_messages
 
 class RegistrationSerializer(serializers.ModelSerializer):
     """Serializers registration requests and creates a new user."""
@@ -46,11 +46,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             - ("Password should at least contain a number, capital and small letter."): for non alphanumeric paaswords  
         
         """
-        if len(password) < 8: 
-            raise serializers.ValidationError("Password must be longer than 8 characters.")
-        elif re.search(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)", password) is None:
-            raise serializers.ValidationError("Password should at least contain a number, capital and small letter.")
-        return password
+        return validate_password(password)
 
     def validate_email(self, email):
         """ This function validates the email input by a new user signing up
@@ -118,14 +114,14 @@ class LoginSerializer(serializers.Serializer):
         # email is not provided.
         if email is None:
             raise serializers.ValidationError(
-                'An email address is required to log in.'
+                error_messages['field required'].format('Email')
             )
 
         # As mentioned above, a password is required. Raise an exception if a
         # password is not provided.
         if password is None:
             raise serializers.ValidationError(
-                'A password is required to log in.'
+                error_messages['field required'].format('Password')
             )
 
         # The `authenticate` method is provided by Django and handles checking
@@ -159,6 +155,28 @@ class LoginSerializer(serializers.Serializer):
 
         }
 
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=255, required=True)
+
+    def validate(self,data):
+        
+        email = data.get('email',None)
+
+        if email is None:
+            raise serializers.ValidationError(error_messages['field required'].format('Email'))
+        
+        return {
+            'email': email
+        }
+
+class PasswordResetSerializer(serializers.Serializer):
+     password = serializers.CharField(max_length=128, required=True)
+
+     def validate(self,data):
+        new_password = data.get('password',None)
+        return {
+            'password': validate_password(new_password)
+        }
 
 class UserSerializer(serializers.ModelSerializer):
     """Handles serialization and deserialization of User objects."""
@@ -194,7 +212,6 @@ class UserSerializer(serializers.ModelSerializer):
         # here is that we need to remove the password field from the
         # `validated_data` dictionary before iterating over it.
         password = validated_data.pop('password', None)
-
         for (key, value) in validated_data.items():
             # For the keys remaining in `validated_data`, we will set them on
             # the current `User` instance one at a time.

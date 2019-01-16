@@ -12,6 +12,20 @@ class BaseTestClass(TestCase):
                 "password": "JakeJake12"
             }
         }
+        self.user_data_weak_password = {
+            "user": {
+                "username": "Jacob",
+                "email": "jake@jake.jake",
+                "password": "jakejake"
+            }
+        }
+        self.user_data_short_password = {
+            "user": {
+                "username": "Jacob",
+                "email": "jake@jake.jake",
+                "password": "jake"
+            }
+        }
 
         self.same_email_user = {
             "user": {
@@ -37,7 +51,11 @@ class BaseTestClass(TestCase):
                 "password": "testpassworD12"
             }
         }
-
+        self.verified_user_forgot_password = {
+            "user": {
+                "email": "testemail@test.com"
+            }
+        }
         self.invalid_user = {
             "user": {
                 "email": "adddd@gmail.com",
