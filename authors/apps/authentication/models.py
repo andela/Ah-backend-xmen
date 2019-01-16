@@ -82,6 +82,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     # A timestamp reprensenting when this object was last updated.
     updated_at = models.DateTimeField(auto_now=True)
 
+    email_verified = models.BooleanField(default=False)
+
+    email_verification_date = models.DateField(auto_now=False, null=True)
+
     # More fields required by Django when specifying a custom user model.
 
     # The `USERNAME_FIELD` property tells us which field we will use to log in.

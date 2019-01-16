@@ -12,6 +12,16 @@ from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
     PasswordResetRequestSerializer, PasswordResetSerializer
 )
+from .utils import email_verification_token
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_text
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail
+from django.urls import reverse
+from .models import User
+from datetime import datetime
+from rest_framework import status
+from django.template.loader import render_to_string
 
 
 class RegistrationAPIView(GenericAPIView):
@@ -22,15 +32,58 @@ class RegistrationAPIView(GenericAPIView):
 
     def post(self, request):
         user = request.data.get('user', {})
-
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
+        """
+        Send user an email verification to the email they registered with.
+        
+        Returns:
+            A success message is returned to the user and a verification is sent to the email they 
+            registered with
+        Raises:
+            serializer.ValidationErrors: if user provides invalid data or tries to register with data 
+            of an existing user
+        
+        """
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        user = serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        uuid = urlsafe_base64_encode(
+            force_bytes(user.pk)).decode()
+        token = email_verification_token.make_token(user)
+        subject = "Email Verification For Authors Heaven"
+        email_verification_url = reverse(
+            'authentication:email-verification', args=[uuid, token])
+        url = request.build_absolute_uri(email_verification_url)
+        context = {'username': user.username,
+                   'url': url}
+
+        message_string = render_to_string('email.html', context,)
+        reciever_email = user.email
+        send_mail(subject, message_string,
+                  'admin@authorshaven', [reciever_email, ])
+
+        return Response({'message':
+                         "An email verification link has been sent to to {} please click the link to confirm your email".format(reciever_email), "Info":
+                         serializer.data}, status=status.HTTP_201_CREATED)
+
+
+class EmailVerificationAPIView(GenericAPIView):
+    def get(self, request, uuid, token):
+        try:
+            user_id = force_bytes(urlsafe_base64_decode(uuid)).decode('utf-8')
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist as e:
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if user is not None and email_verification_token.check_token(user, token):
+            user.email_verified = True
+            user.email_verification_date = datetime.utcnow()
+            user.save()
+            return Response({'message': 'Email verification for {} was completed succesfully'.format(user.email)}, status=status.HTTP_200_OK)
+        return Response({'message': 'Please check the link and try again'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginAPIView(GenericAPIView):

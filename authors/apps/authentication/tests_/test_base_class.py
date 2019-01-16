@@ -81,7 +81,7 @@ class BaseTestClass(TestCase):
 
         self.client = APIClient()
 
-        sign_up_response = self.client.post(reverse('authentication:signup'),
-                                            content_type='application/json', data=json.dumps(self.user2_data))
+        sign_up_response = self.client.post(reverse('authentication:login'),
+                                            content_type='application/json', data=json.dumps(self.verified_user_login_credentials))
 
         self.test_user_token = sign_up_response.data['token']
