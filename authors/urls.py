@@ -46,7 +46,8 @@ urlpatterns = [
     path('api/articles/', include(('authors.apps.comments.urls','comments'), namespace='comments')),
     path('api/bookmarks', BookmarksListView.as_view(), name='bookmarks'),
     path('api/tags', TagListAPIView.as_view(), name='tags'),
-
+    path('api/notifications/', include(('authors.apps.notifications.urls',
+                          'notifications'), namespace='notifications'))
 ]
 
 if settings.DEBUG:

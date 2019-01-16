@@ -1,4 +1,5 @@
 from datetime import date
+from authors.apps.notifications.utils import permissions
 from django.db import models
 from django.db.models.signals import post_save
 from django.conf import settings
@@ -7,8 +8,9 @@ from django.utils.translation import ugettext_lazy as _
 from authors.apps.utils.messages import error_messages
 from rest_framework.serializers import ValidationError
 
+from django.contrib.postgres.fields import ArrayField
 from authors.apps.authentication.models import User
-
+from authors.apps.notifications.utils import permissions
 
 UserModel = getattr(settings, "AUTH_USER_MODEL", User)
 
@@ -65,7 +67,9 @@ class Profile(models.Model):
         blank=True)
     following = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True) 
+    notification_perms = ArrayField(models.CharField(max_length=120), blank=True, default=list)
+
     objects = ProfileManager()
 
     def __str__(self):
@@ -79,6 +83,8 @@ def user_post_save_receiver(instance, created, *args, **kwargs):
     """
     if created:
         Profile.objects.get_or_create(
-            user=instance
+            user=instance,
+            notification_perms = permissions.get_all()
         )
 post_save.connect(user_post_save_receiver, sender=User)
+

@@ -18,6 +18,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from authors.apps.articles.filters import ArticleFilter
 
+from authors.apps.notifications.backends import notify
+
 
 class ArticleListCreateView(generics.ListCreateAPIView):
     queryset = Article.objects.all()
@@ -30,9 +32,10 @@ class ArticleListCreateView(generics.ListCreateAPIView):
     filter_class = ArticleFilter
 
     def perform_create(self, serializer):
-        serializer.save(
+        article = serializer.save(
             author=Profile.objects.get(user=self.request.user)
         )
+        notify.article_created(self.request, article)
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -117,6 +120,9 @@ class ArticleLikesView(generics.RetrieveUpdateDestroyAPIView):
             like = ArticleLikes.objects.create(
                 user=user, article=article_id, like_article=like_article)
             like.save()
+            notify.article_interaction_liked_or_faved(
+                request,like.article,liked_by=like.user.profile
+            )
 
             if ArticleLikes.objects.filter(
                 user=user,
@@ -257,6 +263,7 @@ class FavoriteHandlerView(generics.GenericAPIView):
             "message": Article.objects.handle_favorite_actions(
                 request_user_obj=loggedin_user,article_slug=article.slug)
         }, status=status.HTTP_200_OK)
+        notify.article_interaction_liked_or_faved(self.request,article,favorited_by=loggedin_user.profile)
         return message
 
     def delete(self, *args, **kwargs):
