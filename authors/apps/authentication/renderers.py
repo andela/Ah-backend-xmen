@@ -13,10 +13,20 @@ class UserJSONRenderer(JSONRenderer):
         # check for this case.
         errors = data.get('errors', None)
 
+        # If we receive a `token` key as part of the response, it will be a
+        # byte object. Byte objects don't serialize well, so we need to
+        # decode it before rendering the User object.
+        token = data.get('token', None)
+
         if errors is not None:
             # As mentioned about, we will let the default JSONRenderer handle
             # rendering errors.
             return super(UserJSONRenderer, self).render(data)
+
+        if token is not None and isinstance(token, bytes):
+            # As mentioned about, we will decode the token if it's of type
+            # bytes.
+            data['token'] = token.decode('utf-8')
 
         # Finally, we can render our data under the "user" namespace.
         return json.dumps({

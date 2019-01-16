@@ -32,5 +32,3 @@ class TestModel(TestCase):
         self.user = User.objects.create_user(
             username="aggrey", email="aggrey256@gmail.com", password='randompassword')
         self.assertEqual('aggrey', self.user.get_full_name)
-
-        

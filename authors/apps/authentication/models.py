@@ -1,6 +1,6 @@
 import jwt
 
-from datetime import datetime, timedelta
+from datetime import datetime as date_time, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import (
@@ -117,3 +117,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         the user's real name, we return their username instead.
         """
         return self.username
+
+    def generate_jwt_token(self):
+        """This generates a JSON Web Token that stores"""
+        token_string = str(self.email) + " " + str(self.username)
+        token = jwt.encode(
+            {
+                'user_data': token_string,
+                'exp': date_time.now() + timedelta(minutes=30)
+            }, settings.SECRET_KEY, algorithm='HS256'
+        )
+        return token.decode('utf-8')
+
+    def token(self):
+        """This method allows us to get users' token by calling 'user.token'"""
+        return self.generate_jwt_token()
