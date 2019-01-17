@@ -37,6 +37,12 @@ class BaseTestClass(TestCase):
             }
         }
 
+        self.update_data = {
+            "first_name": "Soultech",
+            "last_name": "Muhwezi",
+            "bio": "Sample bio data"
+        }
+
         self.same_email_user = {
             "user": {
                 "username": "Jackson",
@@ -53,7 +59,9 @@ class BaseTestClass(TestCase):
             }
         }
         self.verified_user = User.objects.create_user(
-            username='testuser1', email='testemail1@test.com', password='testpassworD12')
+            username='testuser1',
+            email='testemail1@test.com',
+            password='testpassworD12')
 
         self.verified_user_login_credentials = {
             "user": {
@@ -77,11 +85,14 @@ class BaseTestClass(TestCase):
         self.client = APIClient()
 
         self.test_user = User.objects.create_user(
-            username='testuser', email='testemail@test.com', password='testpassworD12')
+            username='testuser',
+            email='testemail@test.com', password='testpassworD12')
 
         self.client = APIClient()
 
-        sign_up_response = self.client.post(reverse('authentication:login'),
-                                            content_type='application/json', data=json.dumps(self.verified_user_login_credentials))
+        sign_up_response = self.client.post(
+            reverse('authentication:login'),
+            content_type='application/json',
+            data=json.dumps(self.verified_user_login_credentials))
 
         self.test_user_token = sign_up_response.data['token']
