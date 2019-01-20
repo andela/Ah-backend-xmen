@@ -22,3 +22,17 @@ class UserProfileJSONRenderer(JSONRenderer):
         return json.dumps({
             'profile': data
         })
+
+class UserProfileListRenderer(JSONRenderer):
+    """
+    Returns profiles of existing users
+    """
+    charset = 'utf-8'
+    
+    def render(self, data, media_type=None, renderer_context=None):
+        """ present a list of 
+        user profiles in json format
+        """
+        return json.dumps({
+            'profiles':data
+        })

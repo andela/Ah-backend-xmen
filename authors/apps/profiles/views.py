@@ -8,10 +8,11 @@ from rest_framework.permissions import (
 from .models import Profile
 from .serializers import (
     UserProfileSerializer,
-    ProfileUpdateSerializer
+    ProfileUpdateSerializer,
+    ProfileListSerializer,
 )
 from authors.apps.utils.messages import error_messages
-from .renderers import UserProfileJSONRenderer
+from .renderers import UserProfileJSONRenderer, UserProfileListRenderer
 
 from authors.apps.utils.custom_permissions.permissions import if_owner_permission
 
@@ -38,8 +39,21 @@ class UserProfileUpdateView(generics.UpdateAPIView):
     and image """
     serializer_class = ProfileUpdateSerializer
     permission_classes = [IsAuthenticated, ]
+    
 
     def get_object(self):
+       
         if_owner_permission(self.request, **self.kwargs)
         username = self.kwargs.get("username")
-        return get_object_or_404(Profile, user__username=username)
+        obj = get_object_or_404(Profile, user__username=username)
+
+        return obj
+
+
+class UserProfileListView(generics.ListAPIView):
+    serializer_class = ProfileListSerializer
+    permission_classes = [IsAuthenticated,]
+    renderer_classes = [UserProfileListRenderer,]
+
+    def get_queryset(self):
+        return Profile.objects.all()
