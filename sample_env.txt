@@ -7,3 +7,4 @@ CLOUD_NAME = replace with the cloud name
 API_KEY = replace with the API key
 API_SECRET = replace with the API secret 
 CLOUDINARY_URL= replace with your cloudinary url
+
