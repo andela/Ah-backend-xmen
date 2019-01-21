@@ -5,6 +5,8 @@ import cloudinary
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -18,7 +20,8 @@ DEBUG = config('DEBUG', cast=bool, default=False)
 ALLOWED_HOSTS = [
     'localhost',
     'ah-backend-xmen.herokuapp.com',
-    'ah-backend-xmen-staging.herokuapp.com'
+    'ah-backend-xmen-staging.herokuapp.com',
+    '127.0.0.1'
 ]
 
 # Application definition
@@ -38,10 +41,11 @@ INSTALLED_APPS = [
     'drf_yasg',
     'cloudinary_storage',
     'cloudinary',
-    
+
 
     'authors.apps.authentication',
     'authors.apps.core',
+    'authors.apps.articles',
     'authors.apps.profiles'
 ]
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -168,6 +172,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
+
 }
 
 

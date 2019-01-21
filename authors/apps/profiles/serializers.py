@@ -32,4 +32,3 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             'image',
             'date_of_birth'
         ]
-

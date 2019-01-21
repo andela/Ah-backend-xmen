@@ -1,11 +1,8 @@
-from django.test import TestCase
-from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse
 from django.core import mail
 import json
 import re
-from .test_data import responses
 from authors.apps.authentication.models import User
 from .test_base_class import BaseTestClass
 
@@ -19,8 +16,8 @@ class TestUserEndPoints(BaseTestClass):
 
     def test_user_email_verification_email_sent(self):
         """ Test email verification email sent """
-        resp = self.client.post(reverse('authentication:signup'),
-                                content_type='application/json', data=json.dumps(self.user_data))
+        self.client.post(reverse('authentication:signup'),
+                                  content_type='application/json', data=json.dumps(self.user_data))
         self.assertIn('Email Verification', mail.outbox[0].subject)
 
     def test_email_verification_succeeds(self):
