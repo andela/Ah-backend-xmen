@@ -7,6 +7,30 @@ responses = {
                 ]
             }
         },
+        
+    'invalid_username':{
+        "errors":{
+            "username": [
+                "Username cannot contain special characters."
+            ]
+        }
+    },
+
+    'numeric_first_char_username':{
+        "errors":{
+            "username": [
+                "Username must start with a letter."
+            ]
+        }
+    },
+
+    'short_username':{
+        "errors":{
+            "username": [
+                "Username must be longer than 5 characters."
+            ]
+        }
+    },
     
     'test_login_with_missing_email_fails': {
             "errors": {
@@ -44,4 +68,62 @@ responses = {
             }
         }
         
+}
+
+invalid_user_data = {
+    'invalid_username': {
+            "user": {
+                "username": "Jac  @ob",
+                "email": "jake@jake.jake",
+                "password": "JakeJake12"
+            }
+        }, 
+
+    'weak_password':{
+            "user": {
+                "username": "Jacob",
+                "email": "jake@jake.jake",
+                "password": "jakejake"
+            }
+        }, 
+
+    'short_password': {
+            "user": {
+                "username": "Jacob",
+                "email": "jake@jake.jake",
+                "password": "jake"
+            }
+        }, 
+
+    'same_email_user': {
+            "user": {
+                "username": "Jackson",
+                "email": "jake@jake.jake",
+                "password": "jAckson5"
+            }
+        }, 
+
+    'same_username_user' : {
+            "user": {
+                "username": "Jacob",
+                "email": "jake@gmail.com",
+                "password": "jAcobson10"
+            }
+        }, 
+    'short_username' : {
+            "user": {
+                "username": "J",
+                "email": "jake@gmail.com",
+                "password": "jAcobson10"
+            }
+        }, 
+
+    'numeric_first_char_username' :{
+        "user": {
+                "username": "12jake",
+                "email": "jake@gmail.com",
+                "password": "jAcobson10"
+            }
+    }
+
 }

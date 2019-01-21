@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers
 import re
 from .models import User
-from authors.apps.utils.validators.validation_helpers import validate_password
+from authors.apps.utils.validators.validation_helpers import validate_password, validate_username
 from authors.apps.utils.messages import error_messages
 
 
@@ -31,10 +31,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fields = ['email', 'username', 'password', 'token']
 
     def validate_password(self, password):
-        """ This function validates the password input by a new user signing up
+        """ 
+        This function validates the password input by a new user signing up
 
-            It ensures that the password length is longer than 8 characters to be considered valid.
-            The password should also contain at least a letter and number. 
+        It ensures that the password length is longer than 8 characters to be considered valid.
+        The password should also contain at least a letter and number. 
 
         Args: 
             password (str): This is password string received from user
@@ -51,9 +52,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return validate_password(password)
 
     def validate_email(self, email):
-        """ This function validates the email input by a new user signing up
+        """ 
+        A function to validate the email input by a new user signing up
 
-            It ensures that the email being used for signing up was not already used by another user.
+        It ensures that the email being used for signing up was not already used by another user.
 
         Args: 
             email(str): This is the email string received from user
@@ -73,9 +75,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return email
 
     def validate_username(self, username):
-        """ This function validates the username input by a new user signing up
+        """ 
+        Validation function of the username input by a new user signing up
 
-            It ensures that the username being used for signing up was not already used by another user.
+        It ensures that the username being used for signing up was not already used by another user.
+        It also ensures the username only contains numbers and letters.
 
         Args: 
             username (str): username
@@ -86,13 +90,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
         Raises: 
             ValidationError: 
             - "Username already exists." : for an already existing username
+            - "Username can only contain letters and numbers." : for an invalid username
 
         """
-
-        check_username = User.objects.filter(username=username)
-        if check_username.exists():
-            raise serializers.ValidationError("Username already exists.")
-        return username
+        return validate_username(username)
 
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
