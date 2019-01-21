@@ -1,9 +1,13 @@
 from rest_framework import serializers
-from .models import Profile
 
+from .models import Profile
+from authors.apps.authentication.models import User
 
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
+    followers = serializers.SerializerMethodField()
+    following = serializers.SerializerMethodField()
+    is_following = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
@@ -13,13 +17,53 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'last_name',
             'created_at',
             'bio',
-            'following',
+            'is_following',
             'date_of_birth',
-            'image'
+            'image',
+            'followers',
+            'following'
         ]
 
     def get_username(self, obj):
         return f"{obj.user.username}"
+
+    def get_followers(self,obj):
+        """ 
+        This method returns the number of followers for a given user.
+
+        Args: 
+            obj(instance): This is a profile instance of a user
+
+        """
+        followers = []
+        for user in list(obj.followers.all()):
+            followers.append(user.username)
+        return len(followers)
+
+    def get_following(self,obj):
+        """
+        A method to returns the number of authors a user is following
+
+        Args: 
+            obj(instance): This is a profile instance of a user
+
+        """
+        following = []
+        visitor = None
+        request = self.context.get("request")
+        if not request:
+            return
+        visitor = request.user
+        for profile in visitor.is_following.all():
+            following.append(profile.user.username)
+        return len(following)
+
+    def get_is_following(self,obj):
+        """
+        Sets the following status in a user's profile
+        """
+        visitor = self.context['request'].user
+        return True if visitor in obj.followers.all() else False
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
@@ -37,10 +81,10 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             'last_name',
             'bio',
             'image',
-            'date_of_birth'
+            'date_of_birth',
+            'followers'
         ]
-   
-    
+     
     def get_username(self, obj):
         return f"{obj.user.username}"
 
