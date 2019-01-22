@@ -10,6 +10,7 @@ install:
     - pip install -r requirements.txt
 
 before-script:
+    - psql -c "DROP DATABASE IF EXISTS test_authorstestdb;"
     - psql -c "CREATE DATABASE authorstestdb;" -U postgres
     - python manage.py makemigrations
     - python manage.py migrate
