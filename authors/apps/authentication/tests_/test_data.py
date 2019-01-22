@@ -66,8 +66,17 @@ responses = {
                     "Username already exists."
                 ]
             }
-        }
-        
+        },
+    'no_request_body': {
+        "errors": [
+            "like_article field is required"
+        ]
+    },
+    'none_boolean': {
+        "errors": [
+            "Value of like_article should be a boolean"
+        ]
+    }
 }
 
 invalid_user_data = {
@@ -150,5 +159,12 @@ commentReply_data={
     },
     "reply_update_data":{
         "reply_body":"a test comment reply update body"
+    }
+}
+
+invalid_request_data = {
+    'no_request_body': {},
+    'none_boolean': {
+        'like_article': 'yes'
     }
 }

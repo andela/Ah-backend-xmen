@@ -1,7 +1,8 @@
 from django.db import models
-from .utils import generate_slug, unique_code_generator
+from .utils import generate_slug, unique_code_generator, get_likes_or_dislkes
 from django.db.models.signals import pre_save
 from authors.apps.profiles.models import Profile
+from authors.apps.authentication.models import User
 
 
 class Article(models.Model):
@@ -16,6 +17,22 @@ class Article(models.Model):
     image = models.ImageField(upload_to='articles/images/', blank=True)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
 
+    @property
+    def likes_count(self):
+        return get_likes_or_dislkes(
+            model=ArticleLikes,
+            like_article=True,
+            article_id=self.pk
+        )
+
+    @property
+    def dislikes_count(self):
+        return get_likes_or_dislkes(
+            model=ArticleLikes,
+            like_article=False,
+            article_id=self.pk
+        )
+
     class Meta:
         ordering = ['-created_at']
 
@@ -29,3 +46,11 @@ def article_pre_save_receiver(sender, instance, *args, **kwargs):
 
 
 pre_save.connect(article_pre_save_receiver, Article)
+
+
+class ArticleLikes(models.Model):
+    article = models.ForeignKey(
+        Article, on_delete=models.CASCADE,
+        null=True, related_name="article_likes", blank=True)
+    like_article = models.BooleanField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

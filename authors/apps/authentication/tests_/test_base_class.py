@@ -7,6 +7,8 @@ from authors.apps.profiles.models import Profile
 from authors.apps.articles.models import Article
 from authors.apps.authentication.tests_ import test_data
 from authors.apps.comments.models import Comment
+
+
 class BaseTestClass(TestCase):
     def setUp(self):
         self.user_data = {
@@ -60,8 +62,10 @@ class BaseTestClass(TestCase):
             email='testemail@test.com', password='testpassworD12')
         
 
-        sign_up_response = self.client.post(reverse('authentication:login'),
-                                            content_type='application/json', data=json.dumps(self.verified_user_login_credentials))
+        sign_up_response = self.client.post(
+            reverse('authentication:login'),
+            content_type='application/json',
+            data=json.dumps(self.verified_user_login_credentials))
 
         self.test_user_token = sign_up_response.data['token']
 
@@ -90,3 +94,23 @@ class BaseTestClass(TestCase):
 
         self.testcomment=Comment.objects.create(body='a test comment body',author=self.profile,article=self.created_article)
         
+
+        self.create_article_response = self.client.post(
+            reverse('articles:article-create'),
+            content_type='application/json',
+            data=json.dumps(self.article),
+            HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        test_article = Article.objects.latest('created_at').slug
+        self.like_url = reverse(
+            'articles:article-likes',
+            kwargs={
+                'slug': f'{test_article}'
+            }
+        )
+        self.like_request = {
+            "like_article": True
+        }
+
+        self.dislike_request = {
+            "like_article": False
+        }
