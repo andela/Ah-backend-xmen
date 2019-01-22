@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Article, ArticleLikes, Bookmark
+from .models import Article, ArticleLikes, Bookmark, ArticleRating
+from rest_framework.exceptions import NotFound
+from ..authentication.models import User
 from authors.apps.profiles.models import Profile
 from authors.apps.profiles.serializers import UserProfileSerializer
 from authors.apps.utils.estimator import article_read_time
@@ -25,7 +27,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = ('title', 'slug', 'description', 'created_at',
                   'updated_at', 'favorited', 'favoritesCount',
                   'body', 'image', 'author', 'read_time', 'share_links',
-                  'likes_count', 'dislikes_count')
+                  'likes_count', 'dislikes_count', 'average_rating')
 
     def get_read_time(self, obj):
         return article_read_time(obj.body)
@@ -57,7 +59,8 @@ class ArticleUpdateSerializer(serializers.ModelSerializer):
             'read_time',
             'share_links',
             'likes_count',
-            'dislikes_count'
+            'dislikes_count',
+            'average_rating'
         ]
 
     def get_read_time(self, obj):
@@ -86,3 +89,20 @@ class BookmarksSerializer(serializers.ModelSerializer):
 
     def get_description(self,obj):
        return obj.article.description
+
+
+class ArticleRatingSerializer(serializers.ModelSerializer):
+
+    title = serializers.SerializerMethodField()
+    author = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(required=True, max_value=5, min_value=0)
+
+    class Meta:
+        model = ArticleRating
+        fields = ('title', 'author', 'rating')
+
+    def get_title(self, obj):
+        return obj.article.title
+
+    def get_author(self, obj):
+        return obj.article.author.user.username

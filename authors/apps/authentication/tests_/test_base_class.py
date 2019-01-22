@@ -120,7 +120,7 @@ class BaseTestClass(TestCase):
         )
 
         self.testcomment=Comment.objects.create(body='a test comment body',author=self.profile,article=self.created_article)
-        
+
 
         self.create_article_response = self.client.post(
             reverse('articles:article-create'),
@@ -128,8 +128,20 @@ class BaseTestClass(TestCase):
             data=json.dumps(self.article),
             HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
         test_article = Article.objects.latest('created_at').slug
+        self.single_article_url = reverse(
+            'articles:article-update',
+            kwargs={
+                'slug': f'{test_article}'
+            }
+        )
         self.like_url = reverse(
             'articles:article-likes',
+            kwargs={
+                'slug': f'{test_article}'
+            }
+        )
+        self.rate_url = reverse(
+            'articles:article-rates',
             kwargs={
                 'slug': f'{test_article}'
             }
@@ -169,4 +181,7 @@ class BaseTestClass(TestCase):
         self.test_profile = {
             'name': 'profile.name',
             'email': 'profile.email'
+        }
+        self.test_valid_rating = {
+            'rating': 3
         }
