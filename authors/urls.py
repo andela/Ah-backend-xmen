@@ -41,7 +41,8 @@ urlpatterns = [
     path('api/documentation/', schema_view.with_ui('swagger',
                                                    cache_timeout=0), name='api_documentation'),
     path('api/articles/', include(('authors.apps.articles.urls','articles'), namespace='articles')),
-    path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles'))
+    path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles')),
+    path('api/comment/',include(('authors.apps.comments.urls','comments'),namespace='comments')),
 
 
 ]

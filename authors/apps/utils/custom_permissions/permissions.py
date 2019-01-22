@@ -27,3 +27,10 @@ def check_if_is_author(article, request_obj):
                 error_messages['permission_denied']
             )
         return False
+
+def check_if_is_commentor(comment, request_obj):
+        if str(comment.author) != str(request_obj.user.username):
+            raise PermissionDenied(
+                error_messages['permission_denied']
+            )
+        return False
