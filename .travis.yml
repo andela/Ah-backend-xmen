@@ -10,14 +10,14 @@ install:
     - pip install -r requirements.txt
 
 before-script:
-    - psql -c "DROP DATABASE IF EXISTS authorstestdb;" -U postgres
-    - psql -c "CREATE DATABASE authorstestdb;" -U postgres
+    # - psql -c "DROP DATABASE IF EXISTS authorstestdb;" -U postgres
+    # - psql -c "CREATE DATABASE authorstestdb;" -U postgres
     - python manage.py makemigrations
     - python manage.py migrate
 
 script:
-    # - python manage.py test
-    - coverage run --omit="*tests*,*init*,*migrations*,*wsgi*" --source="authors" manage.py test&&coverage report -m
+    - python manage.py test
+    # - coverage run --omit="*tests*,*init*,*migrations*,*wsgi*" --source="authors" manage.py test&&coverage report -m
 
 after_success:
     - coveralls
