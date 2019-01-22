@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.articles',
-    'authors.apps.profiles'
+    'authors.apps.profiles',
+    'authors.apps.comments'
 ]
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"

@@ -124,6 +124,31 @@ invalid_user_data = {
                 "email": "jake@gmail.com",
                 "password": "jAcobson10"
             }
+    },
+    'not_author_login_credentials':{
+            "user":{
+                "email":"notauthor@author.com",
+                "password":"NotAuthoruser12"
+            }
+        }
+
     }
 
+comment_data={
+   'comment_data':{
+            'body':'a test comment body'
+        },
+        
+    'comment_update':{
+            'body':'a test comment body updated'
+        }
+
+    }
+commentReply_data={
+    'reply_data':{
+        "reply_body":"a test comment reply body"
+    },
+    "reply_update_data":{
+        "reply_body":"a test comment reply update body"
+    }
 }
