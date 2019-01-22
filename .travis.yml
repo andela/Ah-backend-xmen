@@ -16,7 +16,7 @@ before-script:
     - python manage.py migrate
 
 script:
-    - python manage.py test
+    # - python manage.py test
     - coverage run --omit="*tests*,*init*,*migrations*,*wsgi*" --source="authors" manage.py test&&coverage report -m
 
 after_success:
