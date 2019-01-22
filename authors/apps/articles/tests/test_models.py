@@ -1,5 +1,6 @@
 from authors.apps.authentication.tests_.test_base_class import BaseTestClass
 from authors.apps.articles.models import Article
+from authors.apps.articles.apps import ArticlesConfig
 
 
 class ArticleModelTest(BaseTestClass):
@@ -27,3 +28,9 @@ class ArticleModelTest(BaseTestClass):
                           description="Today is beautiful",
                           body="This is the body")
         self.assertEqual(str(article), "Hello today")
+
+    def test_articles_app_instance(self):
+        """
+        Tests the instance of the articles app
+        """
+        self.assertEqual(ArticlesConfig.name, 'articles')

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'cloudinary_storage',
     'cloudinary',
+    'django_filters',
 
 
     'authors.apps.authentication',

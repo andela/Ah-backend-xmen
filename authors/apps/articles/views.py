@@ -9,14 +9,21 @@ from rest_framework import status
 from rest_framework.response import Response
 from authors.apps.utils.messages import error_messages
 from authors.apps.profiles.models import Profile
-from authors.apps.utils.custom_permissions.permissions import check_if_is_author
+from authors.apps.utils.custom_permissions.permissions import (
+    check_if_is_author
+)
+from django_filters.rest_framework import DjangoFilterBackend
+# from rest_framework.filters import OrderingFilter, SearchFilter
 
 
 class ArticleListCreateView(generics.ListCreateAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = (IsAuthenticated,)
+    #permission_classes = (IsAuthenticated,)
     renderer_classes = (ArticleJSONRenderer,)
+    filter_backends = (DjangoFilterBackend, )# OrderingFilter,)
+    filter_fields = ('title', )
+    # ordering_fields =('title')
 
     def perform_create(self, serializer):
         serializer.save(
