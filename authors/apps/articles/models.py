@@ -54,3 +54,7 @@ class ArticleLikes(models.Model):
         null=True, related_name="article_likes", blank=True)
     like_article = models.BooleanField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+class Bookmark(models.Model):
+    article = models.ForeignKey(Article,on_delete=models.CASCADE,related_name='is_bookmarked')
+    profile = models.ForeignKey(Profile,on_delete=models.CASCADE,related_name='bookmarks')
+    

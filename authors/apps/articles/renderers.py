@@ -1,11 +1,8 @@
-import json
-from rest_framework.renderers import JSONRenderer
 
+from authors.apps.utils.renderers import AppJSONRenderer
 
-class ArticleJSONRenderer(JSONRenderer):
-    charset = 'utf-8'
+class ArticleJSONRenderer(AppJSONRenderer):
+    name = 'articles'
 
-    def render(self, data, media_type=None, renderer_context=None):
-        return json.dumps({
-            'articles': data
-        })
+class BookmarkJSONRenderer(AppJSONRenderer):
+    name = 'bookmarks'
