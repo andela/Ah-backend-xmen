@@ -20,8 +20,8 @@ from django.contrib import admin
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework.permissions import AllowAny
-from authors.apps.articles.views import BookmarksListView,TagListAPIView
-
+from authors.apps.articles.views.bookmark_views import BookmarksListView
+from authors.apps.articles.views.views import TagListAPIView
 schema_view = get_schema_view(
     openapi.Info(
         title="Authors Haven",

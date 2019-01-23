@@ -3,7 +3,10 @@ from rest_framework.views import status
 from django.urls import reverse
 from authors.apps.articles.models import Article
 from authors.apps.authentication.tests_.test_base_class import BaseTestClass
-from authors.apps.authentication.tests_.test_data import responses, invalid_request_data
+from authors.apps.authentication.tests_.test_data import (
+    responses, invalid_request_data
+)
+from authors.apps.articles.apps import ArticlesConfig
 
 
 class TestCreateArticleView(BaseTestClass):
@@ -70,6 +73,68 @@ class TestCreateArticleView(BaseTestClass):
             "body": "This is the body of the article"
         }
         resp = self.client.put(url, data=json.dumps(self.update_details),
+                               content_type='application/json',
+                               HTTP_AUTHORIZATION='Bearer ' +
+                               self.test_user_token)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+    def test_filter_article_by_author_succeeds(self):
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' +
+                         self.test_user_token)
+
+        resp = self.client.get(reverse('articles:article-create') + '?author='
+                               + self.test_author,
+                               content_type='application/json',
+                               HTTP_AUTHORIZATION='Bearer ' +
+                               self.test_user_token)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+    def test_filter_by_title_succeeds(self):
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' +
+                         self.test_user_token)
+        title = self.article['title']
+        resp = self.client.get(reverse('articles:article-create') + '?title='
+                               + title,
+                               content_type='application/json',
+                               HTTP_AUTHORIZATION='Bearer ' +
+                               self.test_user_token)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+    def test_favorites_filter_succeeds(self):
+        """
+        favorites filter is based on the Article manager model
+        """
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' +
+                         self.test_user_token)
+        article = Article.objects.latest('created_at').slug
+        self.client.post(f'/api/articles/{article}/favorite',
+                         HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}')
+        value = True
+        resp = self.client.get(f'/api/articles/?favorited={value}',
+                               content_type='application/json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+    
+    def test_filter_article_by_tags_succeeds(self):
+        """
+        Tests that filters by tag succeeds
+        """
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' +
+                         self.test_user_token)
+        tag = self.article['tags'][1]
+        resp = self.client.get(reverse('articles:article-create') + '?tags='
+                               + tag,
                                content_type='application/json',
                                HTTP_AUTHORIZATION='Bearer ' +
                                self.test_user_token)
@@ -229,6 +294,7 @@ class ArticleLikeView(BaseTestClass):
             self.test_user_token)
         self.assertListEqual(["testuser"],
                              response.data.get("likes"))
+
     def test_favoriting_an_article_succeeds_if_authorized(self):
         """
         Checks if an authenticated user can favortie an article
@@ -306,11 +372,11 @@ class ArticleLikeView(BaseTestClass):
             HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
         )
         self.assertIn('Article already in favorites', response2.data.get('message'))
-    
+
     def test_authenticated_user_fetch_favorite_article_succeeds(self):
         """
         Checks if an authenticated user can view a list of favorited articles
-        
+
         Returns  response (Django HTTP Response)
         """
         self.client.post(reverse('articles:article-create'),
@@ -318,7 +384,7 @@ class ArticleLikeView(BaseTestClass):
                          data=json.dumps(self.article),
                          HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
         article = Article.objects.latest('created_at').slug
-        response = self.client.post(
+        self.client.post(
             f'/api/articles/{article}/favorite',
             HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
         )
@@ -327,3 +393,8 @@ class ArticleLikeView(BaseTestClass):
             HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
         )
         self.assertEqual(response2.status_code, status.HTTP_200_OK)
+
+    def test_articles_app_instance(self):
+        self.assertEqual(ArticlesConfig.name, 'articles')
+
+  

@@ -42,13 +42,14 @@ INSTALLED_APPS = [
     'drf_yasg',
     'cloudinary_storage',
     'cloudinary',
+    'django_filters',
 
 
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.articles',
     'authors.apps.profiles',
-    'authors.apps.comments'
+    'authors.apps.comments',
 ]
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"

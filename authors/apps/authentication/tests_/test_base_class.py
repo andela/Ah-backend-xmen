@@ -8,6 +8,7 @@ from authors.apps.articles.models import Article
 from authors.apps.authentication.tests_ import test_data
 from authors.apps.comments.models import Comment,CommentReply
 from decouple import config
+import jwt
 
 
 class BaseTestClass(TestCase):
@@ -186,3 +187,5 @@ class BaseTestClass(TestCase):
         self.test_valid_rating = {
             'rating': 3
         }
+        decoded_token = jwt.decode(self.test_user_token, None, None)
+        self.test_author = (decoded_token['user_data'].split(" ")[1])

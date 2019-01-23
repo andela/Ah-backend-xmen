@@ -53,6 +53,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         visitor = None
         request = self.context.get("request")
         if not request:
+            return 
+        if not isinstance(request.user, User):
             return
         visitor = request.user
         for profile in visitor.is_following.all():

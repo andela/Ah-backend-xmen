@@ -61,7 +61,6 @@ class Article(models.Model):
     image = models.ImageField(upload_to='articles/images/', blank=True)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     objects = ArticleManager()
-
     tags = ArrayField(models.CharField(max_length=250), blank=True, default=list)
 
     @property
