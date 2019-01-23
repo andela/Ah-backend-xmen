@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import Profile
 from authors.apps.authentication.models import User
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     followers = serializers.SerializerMethodField()

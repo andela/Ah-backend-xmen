@@ -44,8 +44,7 @@ urlpatterns = [
     path('api/articles/', include(('authors.apps.articles.urls','articles'), namespace='articles')),
     path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles')),
     path('api/articles/', include(('authors.apps.comments.urls','comments'), namespace='comments')),
-    path('api/bookmarks', BookmarksListView.as_view(), name='bookmarks')
-
+    path('api/bookmarks', BookmarksListView.as_view(), name='bookmarks'),
 
 ]
 

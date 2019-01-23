@@ -21,13 +21,30 @@ class ArticleSerializer(serializers.ModelSerializer):
     author = AuthorProfileSerializer(read_only=True)
     read_time = serializers.SerializerMethodField()
     share_links = serializers.SerializerMethodField()
+    favorites = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
         fields = ('title', 'slug', 'description', 'created_at',
-                  'updated_at', 'favorited', 'favoritesCount',
+                  'updated_at', 'favorited', 'favorites', 'favoritesCount',
                   'body', 'image', 'author', 'read_time', 'share_links',
                   'likes_count', 'dislikes_count', 'average_rating')
+
+
+    def generate_usernames(self,profiles):
+        """
+        Args:
+           profiles: Django model queryset
+        Yields:
+           string: username mapping to user profile id
+        """
+        for profile in profiles:
+                yield profile.user.username
+
+    def get_favorites(self,obj):
+        return list(self.generate_usernames(
+            obj.favorites.all()
+            ))
 
     def get_read_time(self, obj):
         return article_read_time(obj.body)
@@ -37,13 +54,13 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     def get_share_links(self, obj):
         return share_links_generator(obj, self.context['request'])
+    
 
 
 class ArticleUpdateSerializer(serializers.ModelSerializer):
     author = AuthorProfileSerializer(read_only=True)
     read_time = serializers.SerializerMethodField()
-    share_links = serializers.SerializerMethodField()
-
+    share_links = serializers.SerializerMethodField()  
     class Meta:
         model = Article
         fields = [
@@ -53,6 +70,7 @@ class ArticleUpdateSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'favorited',
+            'favorites',
             'favoritesCount',
             'image',
             'author',
@@ -106,3 +124,14 @@ class ArticleRatingSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         return obj.article.author.user.username
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Article
+        fields = [
+            'title',
+            'slug',
+            'body',
+            
+        ]

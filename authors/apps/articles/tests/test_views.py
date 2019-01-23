@@ -229,3 +229,101 @@ class ArticleLikeView(BaseTestClass):
             self.test_user_token)
         self.assertListEqual(["testuser"],
                              response.data.get("likes"))
+    def test_favoriting_an_article_succeeds_if_authorized(self):
+        """
+        Checks if an authenticated user can favortie an article
+        If the article has been favorited, it is removed from favorites
+        Args: slug (Django model article instance)
+        
+        Returns  response (Django HTTP Response)
+        """
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        article = Article.objects.latest('created_at').slug
+        response = self.client.post(
+            f'/api/articles/{article}/favorite',
+            HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
+        )
+        response2 = self.client.delete(
+            f'/api/articles/{article}/favorite',
+            HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
+        )
+        self.assertIn('Article has been removed from favorites', response2.data.get('message'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_unfavoriting_an_article_fails_if_not_in_favorites(self):
+        """
+        Checks if an authenticated user can favorite an article
+        If the article has been favorited, it is removed from favorites
+        Otherwise the user is notified that such an article doesnot
+        exist in their favorites list.
+        
+        Args: slug (Django model article instance)
+        
+        Returns  response (Django HTTP Response)
+        """
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        article = Article.objects.latest('created_at').slug
+        response = self.client.post(
+            f'/api/articles/{article}/favorite',
+            HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
+        )
+        response2 = self.client.delete(
+            f'/api/articles/{article}/favorite',
+            HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
+        )
+        response3 = self.client.delete(
+            f'/api/articles/{article}/favorite',
+            HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
+        )
+        self.assertIn('Article does not exist in your favorites', response3.data.get('message'))
+
+    def test_favoriting_twice_fails(self):
+        """
+        Checks if an authenticated user can favortie an article
+        If the article has been favorited, the user is notified that they have
+        already added that article top their favorites list.
+        Args: slug (Django model article instance)
+        
+        Returns  response (Django HTTP Response)
+        """
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        article = Article.objects.latest('created_at').slug
+        response = self.client.post(
+            f'/api/articles/{article}/favorite',
+            HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
+        )
+        response2 = self.client.post(
+            f'/api/articles/{article}/favorite',
+            HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
+        )
+        self.assertIn('Article already in favorites', response2.data.get('message'))
+    
+    def test_authenticated_user_fetch_favorite_article_succeeds(self):
+        """
+        Checks if an authenticated user can view a list of favorited articles
+        
+        Returns  response (Django HTTP Response)
+        """
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        article = Article.objects.latest('created_at').slug
+        response = self.client.post(
+            f'/api/articles/{article}/favorite',
+            HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
+        )
+        response2 = self.client.get(
+            f'/api/articles/favorites',
+            HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}'
+        )
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
