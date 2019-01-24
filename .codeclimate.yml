@@ -33,4 +33,5 @@ checks:
 exclude_patterns:
 - "**/tests_/"
 - "**/migrations/"
+- "**/tests/"
 
