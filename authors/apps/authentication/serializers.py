@@ -2,10 +2,13 @@ import re
 
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-import re
 from .models import User
 from authors.apps.utils.validators.validation_helpers import validate_password, validate_username
 from authors.apps.utils.messages import error_messages
+
+from .social_auth import SocialAuth
+from .register_social import create_social_user
+import uuid
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -199,7 +202,7 @@ class UserSerializer(serializers.ModelSerializer):
         min_length=8,
         write_only=True
     )
-
+    token = serializers.SerializerMethodField()
     class Meta:
         model = User
         fields = ('email', 'username', 'password', 'token',)
@@ -238,3 +241,48 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+    def get_token(self,user):
+        """ Create a token for a user who logs in """
+
+        # Overriding the token creation method in the User serializer class so that
+        # we can generate our own valid token from the credentials of the user
+        token = user.generate_jwt_token()
+        return token
+
+
+class FacebookSocialAuthSerializer(serializers.Serializer):
+    """ Handling the endpoint that logs in the user using social auth """
+
+    auth_token = serializers.CharField(max_length=3000, required=True)
+    facebook_verification = SocialAuth.verify_facebook_token
+
+    def check_facebook_auth_token(self, auth_token):
+        
+        profile = FacebookSocialAuthSerializer.facebook_verification(auth_token)
+        return create_social_user(profile)
+
+
+class GoogleSocialAuthSerializer(serializers.Serializer):
+    """ The Google endpoint for that logs in the user using social auth """
+    
+    auth_token = serializers.CharField(max_length=3000)
+    google_verification = SocialAuth.verify_google_token
+
+    def check_google_auth_token(self, auth_token):
+
+        profile = GoogleSocialAuthSerializer.google_verification(auth_token)
+        return create_social_user(profile)
+
+
+class TwitterSocialAuthSerializer(serializers.Serializer):
+    """ Handling the endpoint for Twitter that logs in the user using social auth """
+
+    access_token = serializers.CharField(max_length=3000)
+    access_token_secret = serializers.CharField(max_length=3000)
+    twitter_verification = SocialAuth.verify_twitter_token
+
+    def checking_auth_tokens(self, access_token, access_token_secret):
+
+        profile = TwitterSocialAuthSerializer.twitter_verification(access_token, access_token_secret)
+        return create_social_user(profile)

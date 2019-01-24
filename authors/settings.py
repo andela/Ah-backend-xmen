@@ -19,6 +19,7 @@ DEBUG = config('DEBUG', cast=bool, default=False)
 
 ALLOWED_HOSTS = [
     'localhost',
+    '127.0.0.1',
     'ah-backend-xmen.herokuapp.com',
     'ah-backend-xmen-staging.herokuapp.com',
     '127.0.0.1'

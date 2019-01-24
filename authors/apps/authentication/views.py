@@ -10,7 +10,9 @@ from .backends import JWTAuthentication
 from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
-    PasswordResetRequestSerializer, PasswordResetSerializer
+    PasswordResetRequestSerializer, PasswordResetSerializer,
+    FacebookSocialAuthSerializer, GoogleSocialAuthSerializer,
+    TwitterSocialAuthSerializer
 )
 from .utils import email_verification_token
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -18,10 +20,12 @@ from django.utils.encoding import force_bytes, force_text
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.urls import reverse
-from .models import User
 from datetime import datetime
-from rest_framework import status
 from django.template.loader import render_to_string
+
+import facebook
+from .social_auth import SocialAuth
+import uuid
 
 
 class RegistrationAPIView(GenericAPIView):
@@ -66,8 +70,8 @@ class RegistrationAPIView(GenericAPIView):
                   'admin@authorshaven', [reciever_email, ])
 
         return Response({'message':
-                         "An email verification link has been sent to to {} please click the link to confirm your email".format(reciever_email), "Info":
-                         serializer.data}, status=status.HTTP_201_CREATED)
+                         "An email verification link has been sent to to {} please click the link to confirm your email".format(reciever_email), 
+                         "Info": serializer.data}, status=status.HTTP_201_CREATED)
 
 
 class EmailVerificationAPIView(GenericAPIView):
@@ -167,7 +171,6 @@ class ResetPasswordAPIView(APIView):
         else:
             return Response({"token":"token is not valid"}, status=status.HTTP_400_BAD_REQUEST)
 
-
     def put(self, request,token):
 
         serializer_data = request.data.get('user',{})
@@ -181,3 +184,52 @@ class ResetPasswordAPIView(APIView):
         user.save()
         return Response({"password-reset":"Your password has been updated"}, status=status.HTTP_200_OK)
         
+
+class FacebookLoginAPIview(APIView):
+    permission_classes = (AllowAny,)
+    serializer_class = FacebookSocialAuthSerializer
+    renderer_classes = (UserJSONRenderer,)
+
+    def post(self, request):
+
+        auth_token = request.data.get('auth_token', {})
+
+        serializer = self.serializer_class(data={'auth_token': auth_token})
+        serializer.is_valid(raise_exception=True)
+        social_user = FacebookSocialAuthSerializer.check_facebook_auth_token(self, auth_token)
+        serializer=UserSerializer(social_user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+
+class GoogleLoginAPIview(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = GoogleSocialAuthSerializer
+    
+    def post(self, request):
+
+        auth_token = request.data.get('auth_token', {})
+
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        social_user = GoogleSocialAuthSerializer.check_google_auth_token(self, auth_token)
+        serializer = UserSerializer(social_user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+
+class TwitterLoginAPIview(APIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = TwitterSocialAuthSerializer
+
+    def post(self, request):
+
+        access_token = request.data.get('access_token', {})
+        access_token_secret = request.data.get('access_token_secret', {})
+
+        serializer = self.serializer_class(data={'access_token': access_token, 
+                                                 'access_token_secret': access_token_secret})
+        serializer.is_valid(raise_exception=True)
+        social_user = TwitterSocialAuthSerializer.checking_auth_tokens(self, access_token, access_token_secret)
+        serializer=UserSerializer(social_user)
+        return Response(serializer.data, status=status.HTTP_200_OK)

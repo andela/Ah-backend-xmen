@@ -1,10 +1,11 @@
 SECRET_KEY= Replace with secret key
 DATABASE_URL = postgresql://username:password@host:port/database_name
 DEBUG= False
+
 EMAIL_HOST_USER = email@example.com
 EMAIL_HOST_PASSWORD = enter email host password
-CLOUD_NAME = replace with the cloud name
-API_KEY = replace with the API key
-API_SECRET = replace with the API secret 
-CLOUDINARY_URL= replace with your cloudinary url
 
+CLOUD_NAME = cloudinary-username
+API_KEY = cloudinary-api-key
+API_SECRET = cloudinary-secret-key
+CLOUDINARY_URL = cloudinary-base-url

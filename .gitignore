@@ -94,4 +94,4 @@ ENV/
 db.sqlite3
 .vscode/
 authors/apps/.DS_Store
-.DS_Store
+**/.DS_Store

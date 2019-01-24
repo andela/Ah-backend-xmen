@@ -7,6 +7,7 @@ from authors.apps.profiles.models import Profile
 from authors.apps.articles.models import Article
 from authors.apps.authentication.tests_ import test_data
 from authors.apps.comments.models import Comment
+from decouple import config
 
 
 class BaseTestClass(TestCase):
@@ -16,6 +17,20 @@ class BaseTestClass(TestCase):
                 "username": "Jacob",
                 "email": "jake@jake.jake",
                 "password": "JakeJake12"
+            }
+        }
+        self.user_data_weak_password = {
+            "user": {
+                "username": "Jacob",
+                "email": "jake@jake.jake",
+                "password": "jakejake"
+            }
+        }
+        self.user_data_short_password = {
+            "user": {
+                "username": "Jacob",
+                "email": "jake@jake.jake",
+                "password": "jake"
             }
         }
         self.user2_data = {
@@ -29,6 +44,20 @@ class BaseTestClass(TestCase):
             "first_name": "Soultech",
             "last_name": "Muhwezi",
             "bio": "Sample bio data"
+        }
+        self.same_email_user = {
+            "user": {
+                "username": "Jackson",
+                "email": "jake@jake.jake",
+                "password": "jAckson5"
+            }
+        }
+        self.same_username_user = {
+            "user": {
+                "username": "Jacob",
+                "email": "jake@gmail.com",
+                "password": "jAcobson10"
+            }
         }
         self.verified_user = User.objects.create_user(
             username='testuser1',
@@ -56,16 +85,14 @@ class BaseTestClass(TestCase):
         
       
         self.client = APIClient()
-
         self.test_user = User.objects.create_user(
             username='testuser',
             email='testemail@test.com', password='testpassworD12')
         
 
-        sign_up_response = self.client.post(
-            reverse('authentication:login'),
-            content_type='application/json',
-            data=json.dumps(self.verified_user_login_credentials))
+        self.client = APIClient()
+        sign_up_response = self.client.post(reverse('authentication:login'),
+                                            content_type='application/json', data=json.dumps(self.verified_user_login_credentials))
 
         self.test_user_token = sign_up_response.data['token']
 
@@ -113,4 +140,33 @@ class BaseTestClass(TestCase):
 
         self.dislike_request = {
             "like_article": False
+        }
+
+        # Tokens to be used for the social platforms
+        # Facebook authorisation tokens
+        self.valid_facebook_token = {
+            "auth_token": config('auth_token')
+        }
+        self.invalid_facebook_token = {
+            "auth_token": "hjdwheugclaugiehuyegcuehugcyegaehcgygeiouegfhuiwygauyesfidghc"
+        }
+        #Twitter authorization tokens 
+        self.invalid_twitter_tokens = {
+            "access_token": "hjdwheugclaugiehkjhgdshggdgg.lkjhugcyegaehcgyge",
+            "access_token_secret": "ksuyfdxzsjhfxyashdchlxahkcgyfudc"
+        }
+        self.valid_twitter_tokens = {
+            "access_token": config('access_token'),
+	        "access_token_secret": config('access_token_secret')
+        }
+        #Google authorization tokens 
+        self.invalid_google_token = {
+            "access_token": "hjdwheugclaugiehkjhgdshggdgg.lkjhugcyegaehcgygebkjbcbjkbjc"
+        }
+        self.valid_google_token = {
+            "auth_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjA4ZDMyNDVjNjJmODZiNjM2MmFmY2JiZmZlMWQwNjk4MjZkZDFkYzEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0MDc0MDg3MTgxOTIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0MDc0MDg3MTgxOTIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDk1Mzk3ODQ5NDg3MzM1NzYyMzUiLCJlbWFpbCI6ImRvdWdsYXMua2F0bzdAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiJ1Vmh0V2RlWUNOeFFpU3BNT3BvYW9BIiwibmFtZSI6IkRvdWdsYXMgS2F0byIsInBpY3R1cmUiOiJodHRwczovL2xoNC5nb29nbGV1c2VyY29udGVudC5jb20vLXU5WTQxT3V5b0VRL0FBQUFBQUFBQUFJL0FBQUFBQUFBQUFjL0xlWTFNbmtRV0tFL3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJEb3VnbGFzIiwiZmFtaWx5X25hbWUiOiJLYXRvIiwibG9jYWxlIjoiZW4iLCJpYXQiOjE1NDgyMzYyNjMsImV4cCI6MTU0ODIzOTg2M30.U3kSajYGNmHncTNhck5ECpgNxj-bcbA8wjqw1dUVrYr6W3UMVRS72Bm8758rgLHoFonSKbTLTeM5LuZcD6KFmJCDoaPJlSilwJySkKZCsPggQ3feL9UGskFoqYT6EIMm78_8UW1svwbmVu7WXsBG9j4RdwCwFiXEfdmaVNQimUtj7xxqgUaW43ftGA2lQi1uqcuIueHi9YpB0glMDJMEZ1QbJxYd_lx6lbubei6sg3fScP2Y2qo0c71TeZp3P652Rwb8vmuGwZ0m5vehbRxzE_I6q9SGWqfMkHbOe8Zpef6U-dk4G3AQCKJK689TWNQDmWo-Je8R3mrT_vvbNbC28w"
+        }
+        self.test_profile = {
+            'name': 'profile.name',
+            'email': 'profile.email'
         }
