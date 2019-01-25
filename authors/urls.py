@@ -20,7 +20,7 @@ from django.contrib import admin
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework.permissions import AllowAny
-from authors.apps.articles.views import BookmarksListView
+from authors.apps.articles.views import BookmarksListView,TagListAPIView
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -45,6 +45,7 @@ urlpatterns = [
     path('api/profiles/', include(('authors.apps.profiles.urls','profiles'),  namespace='profiles')),
     path('api/articles/', include(('authors.apps.comments.urls','comments'), namespace='comments')),
     path('api/bookmarks', BookmarksListView.as_view(), name='bookmarks'),
+    path('api/tags', TagListAPIView.as_view(), name='tags'),
 
 ]
 

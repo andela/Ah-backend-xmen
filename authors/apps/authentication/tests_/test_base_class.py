@@ -111,7 +111,8 @@ class BaseTestClass(TestCase):
         self.article = {
             "title": "hello worlfd",
             "description": "desctriptuo",
-            "body": 'boddydydabagd'
+            "body": 'boddydydabagd',
+            "tags": ["andela", "xmen"]
         }
         self.profile=Profile.objects.get(user=self.verified_user)
         self.created_article=Article.objects.create(

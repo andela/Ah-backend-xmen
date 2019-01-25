@@ -1,5 +1,4 @@
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics, status, serializers
 from .models import Article, ArticleLikes, Bookmark, ArticleRating
 from django.shortcuts import get_object_or_404
 from .serializers import (
@@ -7,9 +6,6 @@ from .serializers import (
     ArticleRatingSerializer, FavoriteSerializer
 )
 from .renderers import ArticleJSONRenderer, BookmarkJSONRenderer, FavortiesJsonRenderer
-from rest_framework import serializers
-from .renderers import ArticleJSONRenderer
-from rest_framework import status, serializers
 from rest_framework.response import Response
 from authors.apps.utils.messages import error_messages, favorite_actions_messages
 from authors.apps.profiles.models import Profile
@@ -19,6 +15,9 @@ from authors.apps.utils.custom_permissions.permissions import (
 from .paginators import ArticleLimitOffSetPagination
 from .utils import get_like_status, get_usernames
 from rest_framework.exceptions import NotFound
+from rest_framework.permissions import (
+    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+)
 
 
 class ArticleListCreateView(generics.ListCreateAPIView):
@@ -190,6 +189,19 @@ class ArticleLikesView(generics.RetrieveUpdateDestroyAPIView):
             {'likes': pleasured_users,
                 'dislikes': displeasured_users},
             status=status.HTTP_200_OK)
+
+
+class TagListAPIView(generics.ListAPIView):
+    """ Create a view that is used to fetch all the tags """
+    pagination_class = None
+    permission_classes = (IsAuthenticated,)
+    
+    def get(self, request):
+        tags_set = set()
+        for article in Article.objects.all():
+            for tag in article.tags:
+                tags_set.add(tag)
+        return Response({'tags': list(tags_set)}, status = status.HTTP_200_OK)
 
 
 class BookmarkAPIView(generics.GenericAPIView):
