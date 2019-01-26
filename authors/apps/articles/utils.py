@@ -2,6 +2,7 @@ import random
 import string
 from django.utils.text import slugify
 from django.contrib.auth import get_user_model
+from django.db.models import Avg
 
 
 def unique_code_generator(size=5, chars=string.ascii_lowercase + string.digits):
@@ -66,3 +67,13 @@ def get_usernames(**kwargs):
         usernames.append(get_user_model().objects.get(
             pk=likes.user.id).username)
     return usernames
+
+
+def get_average_value(**kwargs):
+    avg_ratings = kwargs.get('model').objects.all().filter(
+        article_id=kwargs.get('article_id')
+    ).aggregate(Avg('rating')).get('rating__avg')
+    if avg_ratings is None:
+        return 0
+    else:
+        return int(avg_ratings)

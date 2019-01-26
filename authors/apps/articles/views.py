@@ -1,15 +1,17 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from .models import Article, ArticleLikes,Bookmark
+from .models import Article, ArticleLikes, Bookmark, ArticleRating
 from django.shortcuts import get_object_or_404
-from .serializers import ArticleSerializer, ArticleUpdateSerializer,BookmarksSerializer
+from .serializers import (
+    ArticleSerializer, ArticleUpdateSerializer, BookmarksSerializer,
+    ArticleRatingSerializer)
 from .renderers import ArticleJSONRenderer, BookmarkJSONRenderer
 from rest_framework import status, serializers
 from rest_framework.response import Response
 from authors.apps.utils.messages import error_messages
 from authors.apps.profiles.models import Profile
 from authors.apps.utils.custom_permissions.permissions import (
-    check_if_is_author,
+    check_if_is_author
 )
 from .paginators import ArticleLimitOffSetPagination
 from .utils import get_like_status, get_usernames
@@ -185,6 +187,8 @@ class ArticleLikesView(generics.RetrieveUpdateDestroyAPIView):
             {'likes': pleasured_users,
                 'dislikes': displeasured_users},
             status=status.HTTP_200_OK)
+
+
 class BookmarkAPIView(generics.GenericAPIView):
     """ puts and deletes a bookmark """
     serializer_class = BookmarksSerializer
@@ -195,32 +199,62 @@ class BookmarkAPIView(generics.GenericAPIView):
         return {
             'request': self.request
         }
-    def fetch_required_params(self,request,slug):
-        article = get_object_or_404(Article,slug=slug)
+
+    def fetch_required_params(self, request, slug):
+        article = get_object_or_404(Article, slug=slug)
         me = request.user.profile
         bookmarks = me.bookmarks.all()
-        return article,me,bookmarks
-    def post(self,request,slug):
-        article,me,bookmarks = self.fetch_required_params(request,slug)
+        return article, me, bookmarks
+
+    def post(self, request, slug):
+        article, me, bookmarks = self.fetch_required_params(request, slug)
         for bookmark in bookmarks:
             if bookmark.article.slug == slug:
                 raise serializers.ValidationError('Article already bookmarked')
-        new_bookmark = Bookmark.objects.create(article= article,profile= me)
-        return Response({'message':'Article added to bookmarks'}, status=status.HTTP_200_OK)
+        new_bookmark = Bookmark.objects.create(article=article, profile=me)
+        return Response({'message': 'Article added to bookmarks'}, status=status.HTTP_200_OK)
 
-    def delete(self,request,slug):
-        article,me,bookmarks = self.fetch_required_params(request,slug)
+    def delete(self, request, slug):
+        article, me, bookmarks = self.fetch_required_params(request, slug)
         for bookmark in bookmarks:
             if bookmark.article.slug == slug:
                 bookmark.delete()
-                return Response({'message':'Article removed from bookmarks'}, status=status.HTTP_200_OK)
+                return Response({'message': 'Article removed from bookmarks'}, status=status.HTTP_200_OK)
         raise serializers.ValidationError('Article not in your bookmarks')
+
 
 class BookmarksListView(generics.ListAPIView):
     serializer_class = BookmarksSerializer
-    permission_classes = [IsAuthenticated,]
-    renderer_classes = [BookmarkJSONRenderer,]
+    permission_classes = [IsAuthenticated, ]
+    renderer_classes = [BookmarkJSONRenderer, ]
 
     def get_queryset(self):
         me = self.request.user.profile
-        return me.bookmarks.all()  
+        return me.bookmarks.all()
+
+
+class RatingsAPIView(generics.GenericAPIView):
+    serializer_class = ArticleRatingSerializer
+    permission_classes = [IsAuthenticated, ]
+    renderer_classes = [ArticleJSONRenderer, ]
+
+    def post(self, request, slug):
+
+        user = request.user
+        score = request.data.get('rating')
+        article = get_object_or_404(Article, slug=slug)
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            ArticleRating.objects.get(
+                user=user.pk,
+                article_id=article.pk,
+                rating=score
+            )
+            return Response(
+                {"message": "You have already rated the article"},
+                status=status.HTTP_200_OK)
+        except ArticleRating.DoesNotExist:
+            serializer.save(user=user, article=article)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)

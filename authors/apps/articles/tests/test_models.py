@@ -1,5 +1,6 @@
 from authors.apps.authentication.tests_.test_base_class import BaseTestClass
-from authors.apps.articles.models import Article
+from authors.apps.articles.models import Article, ArticleRating
+from authors.apps.articles.utils import get_average_value
 
 
 class ArticleModelTest(BaseTestClass):
