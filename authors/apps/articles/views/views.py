@@ -1,36 +1,46 @@
 from rest_framework import generics, status, serializers
-from .models import Article, ArticleLikes, Bookmark, ArticleRating
-from django.shortcuts import get_object_or_404
-from .serializers import (
-    ArticleSerializer, ArticleUpdateSerializer, BookmarksSerializer,
-    ArticleRatingSerializer, FavoriteSerializer
+from authors.apps.articles.models import Article, ArticleLikes, ArticleRating
+from authors.apps.articles.serializers import (
+    ArticleSerializer, ArticleUpdateSerializer, ArticleRatingSerializer, FavoriteSerializer
 )
-from .renderers import ArticleJSONRenderer, BookmarkJSONRenderer, FavortiesJsonRenderer
+from authors.apps.articles.renderers import ArticleJSONRenderer, FavortiesJsonRenderer
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from authors.apps.utils.messages import error_messages, favorite_actions_messages
 from authors.apps.profiles.models import Profile
 from authors.apps.utils.custom_permissions.permissions import (
     check_if_is_author
 )
-from .paginators import ArticleLimitOffSetPagination
-from .utils import get_like_status, get_usernames
-from rest_framework.exceptions import NotFound
-from rest_framework.permissions import (
-    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
-)
+from authors.apps.articles.paginators import ArticleLimitOffSetPagination
+from authors.apps.articles.utils import get_like_status, get_usernames
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+from authors.apps.articles.filters import ArticleFilter
 
 
 class ArticleListCreateView(generics.ListCreateAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = (IsAuthenticated,)
     renderer_classes = (ArticleJSONRenderer,)
+    permission_classes = (IsAuthenticated, )
     pagination_class = ArticleLimitOffSetPagination
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    search_fields = ('title', 'body', 'description', 'author__user__username')
+    filter_class = ArticleFilter
 
     def perform_create(self, serializer):
         serializer.save(
             author=Profile.objects.get(user=self.request.user)
         )
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            self.permission_classes = [AllowAny, ]
+
+        else:
+            self.permission_classes = [IsAuthenticated, ]
+        return super(ArticleListCreateView, self).get_permissions()
 
 
 class ArticleUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
@@ -77,7 +87,6 @@ class ArticleLikesView(generics.RetrieveUpdateDestroyAPIView):
             request (Request object): Django Request context
             slug (Article label): stores and generates a valid URL for the
                                     article.
-
         Returns:
             HTTP Response message: A dictionary
             HTTP Status code: 201, 200
@@ -133,7 +142,6 @@ class ArticleLikesView(generics.RetrieveUpdateDestroyAPIView):
             request (Request object): Django Request context
             slug (Article label): stores and generates a valid URL for the
                                     article.
-
         Returns:
             HTTP Response message
             HTTP Status code: 200
@@ -167,7 +175,6 @@ class ArticleLikesView(generics.RetrieveUpdateDestroyAPIView):
             request (Request object): Django Request context
             slug (Article label): stores and generates a valid URL for the
                                     article.
-
         Returns:
             HTTP Response message
             HTTP Status code: 200
@@ -201,51 +208,7 @@ class TagListAPIView(generics.ListAPIView):
         for article in Article.objects.all():
             for tag in article.tags:
                 tags_set.add(tag)
-        return Response({'tags': list(tags_set)}, status = status.HTTP_200_OK)
-
-
-class BookmarkAPIView(generics.GenericAPIView):
-    """ puts and deletes a bookmark """
-    serializer_class = BookmarksSerializer
-    permission_classes = (IsAuthenticated,)
-    renderer_classes = (BookmarkJSONRenderer,)
-
-    def get_serializer_context(self):
-        return {
-            'request': self.request
-        }
-
-    def fetch_required_params(self, request, slug):
-        article = get_object_or_404(Article, slug=slug)
-        me = request.user.profile
-        bookmarks = me.bookmarks.all()
-        return article, me, bookmarks
-
-    def post(self, request, slug):
-        article, me, bookmarks = self.fetch_required_params(request, slug)
-        for bookmark in bookmarks:
-            if bookmark.article.slug == slug:
-                raise serializers.ValidationError('Article already bookmarked')
-        new_bookmark = Bookmark.objects.create(article=article, profile=me)
-        return Response({'message': 'Article added to bookmarks'}, status=status.HTTP_200_OK)
-
-    def delete(self, request, slug):
-        article, me, bookmarks = self.fetch_required_params(request, slug)
-        for bookmark in bookmarks:
-            if bookmark.article.slug == slug:
-                bookmark.delete()
-                return Response({'message': 'Article removed from bookmarks'}, status=status.HTTP_200_OK)
-        raise serializers.ValidationError('Article not in your bookmarks')
-
-
-class BookmarksListView(generics.ListAPIView):
-    serializer_class = BookmarksSerializer
-    permission_classes = [IsAuthenticated, ]
-    renderer_classes = [BookmarkJSONRenderer, ]
-
-    def get_queryset(self):
-        me = self.request.user.profile
-        return me.bookmarks.all()
+        return Response({'tags': list(tags_set)}, status=status.HTTP_200_OK)
 
 
 class RatingsAPIView(generics.GenericAPIView):
@@ -277,10 +240,10 @@ class RatingsAPIView(generics.GenericAPIView):
 
 class FavoriteHandlerView(generics.GenericAPIView):
     serialiser_class = ArticleSerializer
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated, ]
 
     def get_object(self):
-        slug=self.kwargs.get('slug')
+        slug = self.kwargs.get('slug')
         return get_object_or_404(Article, slug=slug)
 
     def post(self, *args, **kwargs):
@@ -291,7 +254,7 @@ class FavoriteHandlerView(generics.GenericAPIView):
                                status=status.HTTP_400_BAD_REQUEST)
         else:
             message = Response({
-            "message":Article.objects.handle_favorite_actions(
+            "message": Article.objects.handle_favorite_actions(
                 request_user_obj=loggedin_user,article_slug=article.slug)
         }, status=status.HTTP_200_OK)
         return message
@@ -299,15 +262,16 @@ class FavoriteHandlerView(generics.GenericAPIView):
     def delete(self, *args, **kwargs):
         loggedin_user = self.request.user
         article = self.get_object()
-        if article  in loggedin_user.profile.favorited_articles.all():
+        if article in loggedin_user.profile.favorited_articles.all():
             return Response({
-            "message":Article.objects.handle_unfavorite(
-                request_user=loggedin_user,article_slug=article.slug)
+                "message": Article.objects.handle_unfavorite(
+                    request_user=loggedin_user, article_slug=article.slug)
         }, status=status.HTTP_200_OK)
         else:
-            return Response({"message":favorite_actions_messages.get('not_favorited')},
-             status=status.HTTP_400_BAD_REQUEST)  
-    
+            return Response({"message": favorite_actions_messages.get('not_favorited')},
+                            status=status.HTTP_400_BAD_REQUEST)  
+
+
 class FavoritesView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     renderer_classes = [FavortiesJsonRenderer, ]

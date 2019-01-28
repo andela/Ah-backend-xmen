@@ -1,5 +1,4 @@
 from datetime import date
-
 from django.db import models
 from django.db.models.signals import post_save
 from django.conf import settings
@@ -13,6 +12,7 @@ from authors.apps.authentication.models import User
 
 UserModel = getattr(settings, "AUTH_USER_MODEL", User)
 
+
 class ProfileManager(models.Manager):
     """
     Contains the methods to follow and unfollow a user profile 
@@ -25,7 +25,7 @@ class ProfileManager(models.Manager):
             raise ValidationError(error_messages['follow denied'])
         if user in follow.followers.all():
             raise ValidationError(error_messages['already follow'].format(follow.user.username))
-        else: 
+        else:
             follow.followers.add(user)
             is_following = True
         return follow,is_following
@@ -42,6 +42,7 @@ class ProfileManager(models.Manager):
         else:
             raise ValidationError(error_messages['not follow'].format(follow.user.username))
         return follow, is_following
+
 
 class Profile(models.Model):
     """

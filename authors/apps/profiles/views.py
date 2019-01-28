@@ -13,7 +13,7 @@ from .models import Profile, ProfileManager
 from .renderers import UserProfileJSONRenderer, UserProfileListRenderer
 from .serializers import (ProfileListSerializer, ProfileUpdateSerializer,
                           UserProfileSerializer)
-
+                          
 
 class UserProfileView(generics.RetrieveAPIView):
     """ Fetches and displays the details
