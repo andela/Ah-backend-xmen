@@ -63,7 +63,9 @@ class Article(models.Model):
     image = models.ImageField(upload_to='articles/images/', blank=True)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     objects = ArticleManager()
+
     tags = ArrayField(models.CharField(max_length=250), blank=True, default=list)
+    read_stats = models.IntegerField(default=0)
 
     def get_absolute_url(self):
         return reverse('articles:article-update', kwargs={'slug': self.slug})
@@ -141,3 +143,17 @@ class ReportArticle(models.Model):
     class Meta:
         ordering = ['-reported_at']
   
+class ReadStats(models.Model):
+    """ 
+    This class is to hold data aquired from the statistics of the article 
+    """
+    article = models.ForeignKey(Article, on_delete=models.CASCADE,
+                                blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    read_stats = models.IntegerField(default=0)
+
+    def __str__(self):
+        return "article_title: {}, user: {}, read_stats: {}".format(
+            self.article,
+            self.user,
+            self.read_stats)

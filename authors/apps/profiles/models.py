@@ -59,8 +59,9 @@ class Profile(models.Model):
     last_name = models.CharField(max_length=120, blank=True, null=True)
     date_of_birth = models.DateField(_("Date"), blank=True, null=True)
     followers = models.ManyToManyField(User, related_name='is_following', blank=True) 
+
     # to access the profiles an author is following, make use of user1.is_following.all() 
-    #to access followers of a profile, make use of profile1.followers.al()
+    # to access followers of a profile, make use of profile1.followers.al()
     bio = models.TextField(blank=True, null=True)
     image = models.ImageField(
         upload_to='profile/images/',

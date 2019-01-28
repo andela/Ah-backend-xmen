@@ -1,12 +1,13 @@
 import json
 from rest_framework.views import status
 from django.urls import reverse
-from authors.apps.articles.models import Article
+from authors.apps.articles.models import Article, ReadStats
 from authors.apps.authentication.tests_.test_base_class import BaseTestClass
 from authors.apps.authentication.tests_.test_data import (
     responses, invalid_request_data, report_data
 )
 from authors.apps.articles.apps import ArticlesConfig
+
 
 
 class TestCreateArticleView(BaseTestClass):
@@ -77,6 +78,24 @@ class TestCreateArticleView(BaseTestClass):
                                HTTP_AUTHORIZATION='Bearer ' +
                                self.test_user_token)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+    def test_add_read_stats_succeeds(self):
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        article = Article.objects.latest('created_at').slug
+        url = reverse(
+            'articles:article-update',
+            kwargs={
+                'slug': f'{article}'
+            }
+        )
+        resp = self.client.get(url,
+                               HTTP_AUTHORIZATION='Bearer ' +
+                               self.not_author_token)
+        self.assertEqual(resp.status_code, 200)
+
 
     def test_filter_article_by_author_succeeds(self):
         self.client.post(reverse('articles:article-create'),
@@ -295,6 +314,17 @@ class ArticleLikeView(BaseTestClass):
         self.assertListEqual(["testuser"],
                              response.data.get("likes"))
 
+    def test_unlike_article_fails_if_user_has_not_liked_article(self):
+        rep=self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        article_slug=rep.data['slug']
+
+        rep=self.client.delete(reverse('articles:article-likes',args=[article_slug]),
+            HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        self.assertEqual(rep.status_code,400)
+
     def test_favoriting_an_article_succeeds_if_authorized(self):
         """
         Checks if an authenticated user can favortie an article
@@ -420,6 +450,7 @@ class ArticleLikeView(BaseTestClass):
             data=json.dumps(data),
             HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}')
         self.assertEqual(response2.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual('You do not have permission to perform this action', response2.data.get('detail'))
 
     def test_reporting_on_another_author_article_succeeds(self):
         """
@@ -445,3 +476,64 @@ class ArticleLikeView(BaseTestClass):
             HTTP_AUTHORIZATION=f'Bearer {self.alt_test_user_token}')
         self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
   
+
+class TestReadStatsView(BaseTestClass):
+
+    def test_fetch_read_stats_succeeds_if_authorized(self):
+        """
+        Checking if there is successful retrieval of the read_stats
+        Args:
+           token: (generated token after login)
+        Raises:
+             Django HTTP_FORBIDDEN exception (Django request)
+        """
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        article = Article.objects.latest('created_at').slug
+        url = reverse(
+            'articles:article-update',
+            kwargs={
+                'slug': f'{article}'
+            }
+        )
+        resp = self.client.get(url,
+                               HTTP_AUTHORIZATION='Bearer ' +
+                               self.not_author_token)
+        self.assertEqual(resp.status_code, 200)
+        resp=self.client.get(reverse("profiles:read-stats",args=[self.not_author_user.username]),
+            HTTP_AUTHORIZATION='Bearer ' +
+                             self.not_author_token
+        )
+        self.assertEqual(resp.status_code,200)
+
+    def test_str_method_for_read_stats(self):
+        """
+        Tests that __str__ generates a correct string 
+        representation of a read stat 
+        """
+        reading_stats = ReadStats.objects.create(article=self.created_article,user=self.test_user,read_stats=1)
+        self.assertEqual(reading_stats.__str__(),'article_title: a title, user: testemail@test.com, read_stats: 1')
+
+    def test_fetching_all_read_stats_without_permission(self):
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+                         data=json.dumps(self.article),
+                         HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        article = Article.objects.latest('created_at').slug
+        url = reverse(
+            'articles:article-update',
+            kwargs={
+                'slug': f'{article}'
+            }
+        )
+        resp = self.client.get(url,
+                               HTTP_AUTHORIZATION='Bearer ' +
+                               self.not_author_token)
+        resp=self.client.get(reverse("profiles:read-stats",args=[self.not_author_user.username]),
+            HTTP_AUTHORIZATION='Bearer ' +
+                             self.test_user_token
+        )
+        self.assertIn('You dont have the permissions to access this route',str(resp.data))
+        

@@ -1,11 +1,16 @@
 from rest_framework import serializers
-from .models import Article, ArticleLikes, Bookmark, ArticleRating, ReportArticle
+from .models import (
+    Article, ArticleLikes, Bookmark, ArticleRating, 
+    ReportArticle, ReadStats
+)
 from rest_framework.exceptions import NotFound
 from ..authentication.models import User
 from authors.apps.profiles.models import Profile
 from authors.apps.profiles.serializers import UserProfileSerializer
 from authors.apps.utils.estimator import article_read_time
 from authors.apps.utils.share_links import share_links_generator
+
+from authors.apps.authentication.models import User
 
 
 class AuthorProfileSerializer(UserProfileSerializer):
@@ -21,6 +26,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     read_time = serializers.SerializerMethodField()
     share_links = serializers.SerializerMethodField()
     favorites = serializers.SerializerMethodField()
+    read_stats = serializers.SerializerMethodField()
 
     """ 
     Add the field required in the database so as to hold
@@ -32,7 +38,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = ('title', 'slug', 'description', 'created_at',
                   'updated_at', 'favorited', 'favorites', 'favoritesCount',
                   'body', 'image', 'author', 'read_time', 'share_links',
-                  'likes_count', 'dislikes_count', 'average_rating', 
+                  'likes_count', 'dislikes_count', 'average_rating', 'read_stats', 
                   'tags')
 
     def generate_usernames(self, profiles):
@@ -54,13 +60,17 @@ class ArticleSerializer(serializers.ModelSerializer):
         return article_read_time(obj.body)
 
     def get_share_links(self, obj):
-        return share_links_generator(obj, self.context['request'])  
+        return share_links_generator(obj, self.context['request'])
+
+    def get_read_stats(self, obj):
+        return ReadStats.objects.filter(article=obj).count()
 
 
 class ArticleUpdateSerializer(serializers.ModelSerializer):
     author = AuthorProfileSerializer(read_only=True)
     read_time = serializers.SerializerMethodField()
     share_links = serializers.SerializerMethodField()  
+    read_stats = serializers.SerializerMethodField()
     
     class Meta:
         model = Article
@@ -79,6 +89,7 @@ class ArticleUpdateSerializer(serializers.ModelSerializer):
             'share_links',
             'likes_count',
             'dislikes_count',
+            'read_stats',
             'average_rating',
             'tags'
         ]
@@ -88,6 +99,9 @@ class ArticleUpdateSerializer(serializers.ModelSerializer):
 
     def get_share_links(self, obj):
         return share_links_generator(obj, self.context['request'])
+    
+    def get_read_stats(self, obj):
+        return ReadStats.objects.filter(article=obj).count() 
 
 
 class BookmarksSerializer(serializers.ModelSerializer):
@@ -135,7 +149,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
             'title',
             'slug',
             'body',
-
         ]
 
 
@@ -148,3 +161,16 @@ class ReportArticleSerializer(serializers.ModelSerializer):
             'reported_article',
             'reason'
         ]
+
+
+class ReadStatsSerializer(serializers.ModelSerializer):
+    """
+    This serializer is to handle the data from the ReadStats models
+    """
+    class Meta:
+        model = ReadStats
+        fields = ('user',
+                  'article',
+                  'read_stats'
+                 )
+        read_only_fields = ("user", "article")

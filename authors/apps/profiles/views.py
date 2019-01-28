@@ -10,11 +10,15 @@ from authors.apps.utils.messages import error_messages, response
 
 from authors.apps.authentication.models import User
 from .models import Profile, ProfileManager
-from .renderers import UserProfileJSONRenderer, UserProfileListRenderer
+from .renderers import (UserProfileJSONRenderer, UserProfileListRenderer,
+    ReadStatsJsonRenderer
+)
 from .serializers import (ProfileListSerializer, ProfileUpdateSerializer,
                           UserProfileSerializer)
 
 from authors.apps.notifications.backends import notify
+from authors.apps.articles.models import ReadStats
+from authors.apps.articles.serializers import ReadStatsSerializer
 
 class UserProfileView(generics.RetrieveAPIView):
     """ Fetches and displays the details
@@ -111,4 +115,40 @@ class FollowingView(generics.ListAPIView):
         username = self.kwargs.get('username')
         user = get_object_or_404(User, username=username)
         return  user.is_following.all()
+
+
+class ReadStatsView(generics.ListAPIView):
+    """
+    Function returning the list of articles read by one user
+    """
+    serializer_class = ReadStatsSerializer
+    permission_classes = [IsAuthenticated,]
+    renderer_classes = [ReadStatsJsonRenderer,]
+
+    def get_queryset(self, *args, **kwargs):
+
+        username = self.kwargs.get('username')
+        user = get_object_or_404(User, username=username)
+        read_stats = ReadStats.objects.all().filter(user=user)
+        return [item.article for item in read_stats]
+
+    def get(self, request, username):
+
+        last_read_articles = -10
+        if username == request.user.username:
+            articles = self.get_queryset()
+            last_read_article_list = [{'title':article.title,
+                                          'slug':article.slug,
+                                          'author':article.author.user.username} 
+                                          for article in articles[last_read_articles:]]
+            data = {
+                'user': request.user.username,
+                'total_articles_read': len(articles),
+                'recent_articles_read': list(reversed(last_read_article_list))
+            }
+            return Response(data)
+        else:
+            return Response({
+                'error_message': 'You dont have the permissions to access this route'
+            }, status=status.HTTP_403_FORBIDDEN)
 
