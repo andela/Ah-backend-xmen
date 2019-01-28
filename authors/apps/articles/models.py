@@ -7,6 +7,9 @@ from authors.apps.authentication.models import User
 from authors.apps.profiles.models import Profile
 from authors.apps.utils.messages import error_messages, favorite_actions_messages
 
+from authors.apps.authentication.models import User
+from django.contrib.postgres.fields import ArrayField
+
 
 class ArticleManager(models.Manager):
     def handle_favorite_actions(self, request_user_obj, article_slug):
@@ -45,7 +48,6 @@ class ArticleManager(models.Manager):
             return favorite_actions_messages.get('un_favorited')
 
 
-
 class Article(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, blank=True)
@@ -59,6 +61,8 @@ class Article(models.Model):
     image = models.ImageField(upload_to='articles/images/', blank=True)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     objects = ArticleManager()
+
+    tags = ArrayField(models.CharField(max_length=250), blank=True, default=list)
 
     @property
     def likes_count(self):

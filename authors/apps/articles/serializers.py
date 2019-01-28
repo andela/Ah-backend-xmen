@@ -23,12 +23,18 @@ class ArticleSerializer(serializers.ModelSerializer):
     share_links = serializers.SerializerMethodField()
     favorites = serializers.SerializerMethodField()
 
+    """ 
+    Add the field required in the database so as to hold
+    data from user add a tags field for the tags
+    that a user is going to append to their article
+    """
     class Meta:
         model = Article
         fields = ('title', 'slug', 'description', 'created_at',
                   'updated_at', 'favorited', 'favorites', 'favoritesCount',
                   'body', 'image', 'author', 'read_time', 'share_links',
-                  'likes_count', 'dislikes_count', 'average_rating')
+                  'likes_count', 'dislikes_count', 'average_rating', 
+                  'tags')
 
 
     def generate_usernames(self,profiles):
@@ -78,7 +84,8 @@ class ArticleUpdateSerializer(serializers.ModelSerializer):
             'share_links',
             'likes_count',
             'dislikes_count',
-            'average_rating'
+            'average_rating',
+            'tags'
         ]
 
     def get_read_time(self, obj):
