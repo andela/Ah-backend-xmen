@@ -6,7 +6,7 @@ import json
 from authors.apps.profiles.models import Profile
 from authors.apps.articles.models import Article
 from authors.apps.authentication.tests_ import test_data
-from authors.apps.comments.models import Comment
+from authors.apps.comments.models import Comment,CommentReply
 from decouple import config
 
 
@@ -121,7 +121,7 @@ class BaseTestClass(TestCase):
         )
 
         self.testcomment=Comment.objects.create(body='a test comment body',author=self.profile,article=self.created_article)
-
+        self.testCommentReply=CommentReply.objects.create(reply_body='a test reply body',comment=self.testcomment,author=self.profile)
 
         self.create_article_response = self.client.post(
             reverse('articles:article-create'),
