@@ -6,3 +6,6 @@ class ArticleJSONRenderer(AppJSONRenderer):
 
 class BookmarkJSONRenderer(AppJSONRenderer):
     name = 'bookmarks'
+
+class FavortiesJsonRenderer(AppJSONRenderer):
+    name = "favorites"

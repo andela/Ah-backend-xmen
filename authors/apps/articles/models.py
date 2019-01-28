@@ -3,8 +3,47 @@ from .utils import (
     generate_slug, unique_code_generator,
     get_likes_or_dislkes, get_average_value)
 from django.db.models.signals import pre_save
+from authors.apps.authentication.models import User 
 from authors.apps.profiles.models import Profile
-from authors.apps.authentication.models import User
+from authors.apps.utils.messages import error_messages, favorite_actions_messages
+
+
+class ArticleManager(models.Manager):
+    def handle_favorite_actions(self, request_user_obj, article_slug):
+        """ 
+        Enales both favoriting of articles 
+        Args:
+            request_user_obj:  Django http request user
+            article_slug: Article model instance
+
+        """
+        profile_ = Profile.objects.filter(user=request_user_obj).first()
+        article_ = self.model.objects.filter(slug=article_slug).first()
+        article_.favoritesCount = article_.favorites.count() + 1
+        article_.favorited = True
+        article_.favorites.add(profile_)
+        article_.save()
+        return favorite_actions_messages.get('favorited')
+
+    def handle_unfavorite(self, **kwargs):
+        """ 
+        Handles unfavoriting of articles 
+        Args:
+            request_user:  currently loggedin user
+            article_slug: Article model instance
+
+        """
+        article_slug = kwargs.get("article_slug")
+        request_user = kwargs.get("request_user")
+        user_ = Profile.objects.get(user=request_user)
+        article_to_unfavorite = self.model.objects.get(slug=article_slug)
+        if article_to_unfavorite.favorites.count():
+            article_to_unfavorite.favoritesCount = article_to_unfavorite.favorites.count() - 1
+            article_to_unfavorite.favorites.remove(user_)
+            article_to_unfavorite.favorited =  article_to_unfavorite.favorites.count() > 0
+            article_to_unfavorite.save()
+            return favorite_actions_messages.get('un_favorited')
+
 
 
 class Article(models.Model):
@@ -13,11 +52,13 @@ class Article(models.Model):
     description = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
+    favorites = models.ManyToManyField(Profile, related_name='favorited_articles', blank=True)
     favorited = models.BooleanField(default=False)
     favoritesCount = models.IntegerField(default=0)
     body = models.TextField()
     image = models.ImageField(upload_to='articles/images/', blank=True)
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    objects = ArticleManager()
 
     @property
     def likes_count(self):

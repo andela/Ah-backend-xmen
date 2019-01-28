@@ -4,11 +4,14 @@ from .models import Article, ArticleLikes, Bookmark, ArticleRating
 from django.shortcuts import get_object_or_404
 from .serializers import (
     ArticleSerializer, ArticleUpdateSerializer, BookmarksSerializer,
-    ArticleRatingSerializer)
-from .renderers import ArticleJSONRenderer, BookmarkJSONRenderer
+    ArticleRatingSerializer, FavoriteSerializer
+)
+from .renderers import ArticleJSONRenderer, BookmarkJSONRenderer, FavortiesJsonRenderer
+from rest_framework import serializers
+from .renderers import ArticleJSONRenderer
 from rest_framework import status, serializers
 from rest_framework.response import Response
-from authors.apps.utils.messages import error_messages
+from authors.apps.utils.messages import error_messages, favorite_actions_messages
 from authors.apps.profiles.models import Profile
 from authors.apps.utils.custom_permissions.permissions import (
     check_if_is_author
@@ -257,4 +260,47 @@ class RatingsAPIView(generics.GenericAPIView):
                 status=status.HTTP_200_OK)
         except ArticleRating.DoesNotExist:
             serializer.save(user=user, article=article)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED) 
+
+
+class FavoriteHandlerView(generics.GenericAPIView):
+    serialiser_class = ArticleSerializer
+    permission_classes = [IsAuthenticated,]
+
+    def get_object(self):
+        slug=self.kwargs.get('slug')
+        return get_object_or_404(Article, slug=slug)
+
+    def post(self, *args, **kwargs):
+        loggedin_user = self.request.user
+        article = self.get_object()
+        if article in loggedin_user.profile.favorited_articles.all():
+            message = Response({"message":favorite_actions_messages.get('already_favorited')}, 
+                               status=status.HTTP_400_BAD_REQUEST)
+        else:
+            message = Response({
+            "message":Article.objects.handle_favorite_actions(
+                request_user_obj=loggedin_user,article_slug=article.slug)
+        }, status=status.HTTP_200_OK)
+        return message
+
+    def delete(self, *args, **kwargs):
+        loggedin_user = self.request.user
+        article = self.get_object()
+        if article  in loggedin_user.profile.favorited_articles.all():
+            return Response({
+            "message":Article.objects.handle_unfavorite(
+                request_user=loggedin_user,article_slug=article.slug)
+        }, status=status.HTTP_200_OK)
+        else:
+            return Response({"message":favorite_actions_messages.get('not_favorited')},
+             status=status.HTTP_400_BAD_REQUEST)  
+    
+class FavoritesView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [FavortiesJsonRenderer, ]
+    serializer_class = FavoriteSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        my_profile = self.request.user.profile
+        return my_profile.favorited_articles.all()

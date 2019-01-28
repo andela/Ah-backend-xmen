@@ -70,3 +70,7 @@ class TestUserProfile(BaseTestClass):
         """
         response = self.client.get(f'/api/profiles/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_loggedin_user_views_favorite_articles_succeeds(self):
+        response = self.client.get(f'/api/profiles/', HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
