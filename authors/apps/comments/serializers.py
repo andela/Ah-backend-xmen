@@ -13,12 +13,12 @@ class ReplyCommentSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = AuthorProfileSerializer(read_only=True)
-
+    
     class Meta:
         model = Comment
-        fields = ('id', 'createdAt', 'updatedAt', 'body', 'author',)
+        fields = ('id', 'createdAt', 'updatedAt', 'body', 'author',
+                        'highlight_start', 'highlight_end', 'highlight_text')
         read_only_fields = ('userProfile',)
-
 
 class CommentLikeSerializer(serializers.ModelSerializer):
     liked_by = AuthorProfileSerializer(read_only=True)
@@ -38,3 +38,4 @@ class ReplyLikeSerializer(serializers.ModelSerializer):
         fields = ('reply_like_by',)
         read_only_fields = ('reply_like_by',)
         model = CommentReplyLike
+  
