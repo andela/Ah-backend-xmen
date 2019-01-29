@@ -168,3 +168,21 @@ invalid_request_data = {
         'like_article': 'yes'
     }
 }
+
+highlighted_comment = {
+    'forward_highlight': {
+        'highlight_start': 3,
+        'highlight_end': 10,
+        'body': 'awesome'
+    }, 
+    'reverse_highlight': {
+        'highlight_start': 10,
+        'highlight_end': 3,
+        'body': 'awesome'
+    }, 
+    'invalid_highlight': {
+        'highlight_start': 10,
+        'highlight_end': 30000000,
+        'body': 'awesome'
+    }, 
+}

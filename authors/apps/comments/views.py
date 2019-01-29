@@ -1,15 +1,18 @@
-from rest_framework.generics import GenericAPIView
+from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import CommentSerializer, ReplyCommentSerializer, CommentLikeSerializer, ReplyLikeSerializer
-from authors.apps.profiles.models import Profile
+
 from authors.apps.articles.models import Article
-from .models import Comment, CommentReply, CommentLike, CommentReplyLike
-from django.shortcuts import get_object_or_404
-from authors.apps.utils.custom_permissions.permissions import check_if_is_author
-from authors.apps.authentication.models import User
+from authors.apps.profiles.models import Profile
+from authors.apps.utils.custom_permissions.permissions import \
+    check_if_is_author
+
+from .models import Comment, CommentLike
+from .serializers import CommentLikeSerializer, CommentSerializer
 from .utils import update_obj
+from authors.apps.utils.validators.validation_helpers import validate_index
 
 
 class CommentView(GenericAPIView):
@@ -32,6 +35,14 @@ class CommentView(GenericAPIView):
         """
         self.author = get_object_or_404(Profile, user=request.user)
         self.article = get_object_or_404(Article, slug=slug)
+        start_index = validate_index(request.data.get('highlight_start'), slug)
+        end_index = validate_index(request.data.get('highlight_end'), slug)
+        if start_index and end_index:
+            selection = [int(start_index), int(end_index)] \
+                if int(start_index) < int(end_index) \
+                else [int(end_index), int(start_index)]
+            highlight_text = str(self.article.body[selection[0]:selection[1]])
+            request.data['highlight_text'] = highlight_text
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(author=self.author, article=self.article)

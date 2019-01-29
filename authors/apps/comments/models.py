@@ -11,6 +11,9 @@ class Comment(models.Model):
     updatedAt=models.DateTimeField(auto_now=True)
     author=models.ForeignKey(Profile,on_delete=models.CASCADE)
     article=models.ForeignKey(Article,on_delete=models.CASCADE)
+    highlight_start = models.PositiveIntegerField(null=True, blank=True)
+    highlight_end = models.PositiveIntegerField(null=True, blank=True)
+    highlight_text = models.TextField(max_length=500, null=True)
 
     class Meta:
         ordering=['-createdAt']

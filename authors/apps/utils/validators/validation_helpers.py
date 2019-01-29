@@ -1,7 +1,11 @@
-
 import re
+
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+
+from authors.apps.articles.models import Article
 from authors.apps.authentication.models import User
+
 
 def validate_password(password):
     if password is None:
@@ -24,3 +28,12 @@ def validate_username(username):
     if len(username.strip()) < 5:
         raise serializers.ValidationError("Username must be longer than 5 characters.")
     return username
+
+def validate_index(index, slug):
+    article = get_object_or_404(Article, slug=slug)
+    article_length = len(article.body)
+    if index is None:
+        return
+    if int(index) > article_length:
+        raise serializers.ValidationError("Index must not exceed article length.")
+    return index
