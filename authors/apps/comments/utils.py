@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from authors.apps.utils.custom_permissions.permissions import check_if_is_author
+from .models import Comment
 
 def update_obj(request,id,Instance,serializer_class):
     """
@@ -22,3 +23,28 @@ def update_obj(request,id,Instance,serializer_class):
     return Response({
         'data':serializer.data
     },status=status.HTTP_201_CREATED)
+
+
+def get_edit_history(obj):
+    edit_history = []
+    for item in list(obj.filter(history_type="~")):
+        """ Assign signs to words """
+        if item.history_type == "~":
+            item.history_type = "update"
+
+        """  edited item """
+        edit_history_item = {
+            "change_date": str(item.history_date),
+            "history_id": item.history_id,
+            "history_change_type": item.history_type,
+            "body": get_body_field_name(obj, item)
+            }
+        edit_history.append(edit_history_item)
+    return edit_history
+
+
+def get_body_field_name(obj, item):
+    if item in Comment.comment_history.all():
+        return item.body
+    else:
+        return item.reply_body

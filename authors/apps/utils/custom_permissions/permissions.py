@@ -35,3 +35,10 @@ def can_report(article, request_object):
             error_messages.get('permission_denied')
         )
     return False
+
+
+def check_if_can_track_history(instance_1, instance_2, request_object):
+    if str(instance_1.author) != str(request_object.user.username) and str(instance_2.author) != str(request_object.user.username):
+        raise PermissionDenied(
+                error_messages['permission_denied']
+            )

@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     'django_filters',
-
+    'simple_history',
 
     'authors.apps.authentication',
     'authors.apps.notifications',

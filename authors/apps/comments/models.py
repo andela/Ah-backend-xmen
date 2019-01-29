@@ -1,6 +1,9 @@
+from django.dispatch import receiver
+from django.db.models.signals import pre_save
 from django.db import models
 from authors.apps.articles.models import Article
 from authors.apps.profiles.models import Profile
+from simple_history.models import HistoricalRecords
 
 class Comment(models.Model):
     """
@@ -14,6 +17,7 @@ class Comment(models.Model):
     highlight_text = models.TextField(max_length=500, null=True)
     author=models.ForeignKey(Profile,on_delete=models.CASCADE, related_name='authored_by')
     article=models.ForeignKey(Article,on_delete=models.CASCADE, related_name='article')
+    comment_history = HistoricalRecords()
 
     class Meta:
         ordering=['-createdAt']
@@ -30,6 +34,7 @@ class CommentReply(models.Model):
     repliedOn=models.DateTimeField(auto_now_add=True)
     updatedOn=models.DateTimeField(auto_now=True)
     author=models.ForeignKey(Profile,on_delete=models.CASCADE)
+    reply_history = HistoricalRecords()
 
     class Meta:
         ordering=['repliedOn']
