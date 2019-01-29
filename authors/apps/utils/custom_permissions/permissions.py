@@ -28,3 +28,10 @@ def check_if_is_author(instance, request_obj):
             )
         return False
 
+
+def can_report(article, request_object):
+    if article.author == request_object.user.profile:
+        raise PermissionDenied(
+            error_messages.get('permission_denied')
+        )
+    return False

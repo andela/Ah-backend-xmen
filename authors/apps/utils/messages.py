@@ -7,7 +7,8 @@ error_messages = {
     'follow denied':'You cannot follow yourself.',
     'unfollow denied':'You cannot unfollow yourself.', 
     'already follow':'You already follow {}', 
-    'not follow': 'You do not follow {}'
+    'not follow': 'You do not follow {}',
+    'already_reported': 'This article has already been reported, action is being taken'
 }
 
 response = {
@@ -32,3 +33,12 @@ tasks = {
     'all': 'all',
     'unread': 'unread'
 }
+escalation_message = """
+    {} has reported this article 
+    {}
+    for violating authors heaven terms.
+
+    REASON.
+    {}.
+    Please review and take action!
+    """

@@ -10,5 +10,7 @@ urlpatterns = [
     path('<slug>/likes/', views.ArticleLikesView.as_view(), name='article-likes'),
     path('<slug>/bookmark', bookmark_views.BookmarkAPIView.as_view(), name='article-bookmark'),
     path('<slug>/rate/', views.RatingsAPIView.as_view(), name='article-rates'),
-    path('<slug>/favorite', views.FavoriteHandlerView.as_view(), name='article-favorite'),  
+    path('<slug>/favorite', views.FavoriteHandlerView.as_view(), name='article-favorite'),
+    path('<slug>/report', views.ReportArticleView.as_view(), name='flag'),
+    
 ]

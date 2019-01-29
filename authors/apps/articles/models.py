@@ -2,13 +2,15 @@ from django.db import models
 from .utils import (
     generate_slug, unique_code_generator,
     get_likes_or_dislkes, get_average_value)
-from django.db.models.signals import pre_save
+from django.core.mail import mail_admins
+from django.db.models.signals import pre_save, post_save
 from authors.apps.authentication.models import User 
 from authors.apps.profiles.models import Profile
 from authors.apps.utils.messages import error_messages, favorite_actions_messages
 
 from authors.apps.authentication.models import User
 from django.contrib.postgres.fields import ArrayField
+from django.urls import reverse
 
 
 class ArticleManager(models.Manager):
@@ -62,6 +64,9 @@ class Article(models.Model):
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     objects = ArticleManager()
     tags = ArrayField(models.CharField(max_length=250), blank=True, default=list)
+
+    def get_absolute_url(self):
+        return reverse('articles:article-update', kwargs={'slug': self.slug})
 
     @property
     def likes_count(self):
@@ -120,3 +125,19 @@ class ArticleRating(models.Model):
         null=True, related_name='article_ratings', blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     rating = models.IntegerField()
+
+
+class ReportArticle(models.Model):
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE)
+    reported_article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    reason = models.TextField()
+    reported_at = models.DateTimeField(auto_now_add=True)
+
+    
+
+    def __str__(self):
+        return f"{self.reported_article.title} reported by {self.reporter.username}"
+
+    class Meta:
+        ordering = ['-reported_at']
+  
