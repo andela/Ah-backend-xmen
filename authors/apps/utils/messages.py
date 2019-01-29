@@ -22,3 +22,13 @@ favorite_actions_messages = {
     'un_favorited': 'Article has been removed from favorites',
     'not_favorited':'Article does not exist in your favorites'
 }
+
+notification_mesages = {
+    'missing_field': 'Notification must have a valid {}'
+}
+
+
+tasks = {
+    'all': 'all',
+    'unread': 'unread'
+}

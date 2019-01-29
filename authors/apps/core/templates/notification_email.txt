@@ -1,0 +1,25 @@
+AUTHORS HAVEN
+
+************
+Hi {{username}},
+************
+
+You have a new notification.
+
+{{notification_message}} 
+{{notification_action_url}}
+
+
+You are receiving this notification because you are a member of Author's Haven.
+
+Thanks,
+The Authors Haven Team
+
+If you don't want to receive this type of notification. Please opt out here:
+{{notification_opt_out_url}}
+
+If you don't want to receive any email notifications from Authors Haven. Please opt out here:
+{{notification_opt_out_all_url}}
+
+
+© 2019 Authors Haven. All rights reserved.

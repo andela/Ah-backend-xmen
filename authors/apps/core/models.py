@@ -4,8 +4,10 @@ from django.template.loader import render_to_string
 from authors.apps.authentication.models import User,UserManager
 from rest_framework import serializers
 from django.conf import settings
+from django.urls import reverse
 import jwt
 import datetime
+from authors.apps.notifications.utils import permissions
 
 class PasswordResetManager:
     """
@@ -63,10 +65,6 @@ class PasswordResetManager:
         except:
             return None
 
-    def update_password(self,user,new_password):
-        user.set_password(new_password)
-        user.save()
-
     def send(self,email_text):
         """Sends email_text to recipient"""
         return send_mail(
@@ -76,3 +74,52 @@ class PasswordResetManager:
             [self.receiver_email],
             fail_silently=False
       )
+
+
+class EmailNotificationDispatch:
+    def __init__(self):
+        self.sender_email = 'authors.haven.5@gmail.com'
+        self.subject = "AH - You Have a new notificaton"
+
+    def make_token(self, email, permission_type):
+        return jwt.encode({'email': email,
+                            'permission_type':permission_type,
+                             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1)
+                             },
+                            settings.SECRET_KEY
+                            ,algorithm='HS256').decode('ascii')
+
+    def decode_token(self, token):
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithm='HS256')
+            return payload['email'], payload['permission_type']
+        except Exception as e:
+            raise serializers.ValidationError(str(e))
+        
+    def build_and_send(self, request, notification, notification_permission):
+        self.receiver_email = notification.receiver.user.email
+        opt_out_url = request.build_absolute_uri(reverse('notifications:perms', kwargs={'permission_type': self.make_token(self.receiver_email, notification_permission)}))
+        opt_out_all_url = request.build_absolute_uri(reverse('notifications:perms', kwargs={'permission_type': self.make_token(self.receiver_email, permissions.RECEIVE_NOTIFICATION_EMAILS)}))
+    
+        context = {
+            'username': notification.receiver.user.username,
+            'notification_message' : notification.__str__(),
+            'notification_action_url' : notification.action_link,
+            'notification_opt_out_url': opt_out_url,
+            'notification_opt_out_all_url': opt_out_all_url
+        }
+        self.message = render_to_string('notification_email.txt', context) 
+        self.send()
+
+    def send(self):
+        """Sends email_text to recipient"""
+        return send_mail(
+            self.subject,
+            self.message,
+            self.sender_email,
+            [self.receiver_email],
+            fail_silently=True
+        )
+
+
+email_dispatch = EmailNotificationDispatch()

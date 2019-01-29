@@ -14,6 +14,7 @@ from .serializers import CommentLikeSerializer, CommentSerializer
 from .utils import update_obj
 from authors.apps.utils.validators.validation_helpers import validate_index
 
+from authors.apps.notifications.backends import notify
 
 class CommentView(GenericAPIView):
     """
@@ -45,7 +46,8 @@ class CommentView(GenericAPIView):
             request.data['highlight_text'] = highlight_text
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(author=self.author, article=self.article)
+        comment = serializer.save(author=self.author,article=self.article)
+        notify.article_interaction_comment(request,comment)
         return Response({
             'comment': serializer.data
         }, status=status.HTTP_201_CREATED)

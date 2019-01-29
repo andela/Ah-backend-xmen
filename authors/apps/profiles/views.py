@@ -13,7 +13,8 @@ from .models import Profile, ProfileManager
 from .renderers import UserProfileJSONRenderer, UserProfileListRenderer
 from .serializers import (ProfileListSerializer, ProfileUpdateSerializer,
                           UserProfileSerializer)
-                          
+
+from authors.apps.notifications.backends import notify
 
 class UserProfileView(generics.RetrieveAPIView):
     """ Fetches and displays the details
@@ -69,6 +70,7 @@ class FollowView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         author_username = self.kwargs.get('username')
         Profile.objects.follow_author(request.user, author_username)
+        notify.profile_followed(request,Profile.objects.get(user__username=author_username))
         return Response({'message':response['follow message'].format(author_username)},status=status.HTTP_200_OK)
 
     def delete(self, *args, **kwargs):
