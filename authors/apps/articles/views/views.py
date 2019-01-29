@@ -16,12 +16,11 @@ from authors.apps.profiles.models import Profile
 from authors.apps.utils.custom_permissions.permissions import (
     check_if_is_author, can_report
 )
-from authors.apps.articles.paginators import ArticleLimitOffSetPagination
+from authors.apps.articles.paginators import ArticlePageNumberPagination
 from authors.apps.articles.utils import get_like_status, get_usernames
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from authors.apps.articles.filters import ArticleFilter
-
 from authors.apps.notifications.backends import notify
 
 
@@ -30,7 +29,7 @@ class ArticleListCreateView(generics.ListCreateAPIView):
     serializer_class = ArticleSerializer
     renderer_classes = (ArticleJSONRenderer,)
     permission_classes = (IsAuthenticated, )
-    pagination_class = ArticleLimitOffSetPagination
+    pagination_class = ArticlePageNumberPagination
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     search_fields = ('title', 'body', 'description', 'author__user__username')
     filter_class = ArticleFilter
@@ -125,7 +124,7 @@ class ArticleLikesView(generics.RetrieveUpdateDestroyAPIView):
                 user=user, article=article_id, like_article=like_article)
             like.save()
             notify.article_interaction_liked_or_faved(
-                request,like.article,liked_by=like.user.profile
+                request, like.article, liked_by=like.user.profile
             )
 
             if ArticleLikes.objects.filter(
@@ -265,7 +264,7 @@ class FavoriteHandlerView(generics.GenericAPIView):
         else:
             message = Response({
             "message": Article.objects.handle_favorite_actions(
-                request_user_obj=loggedin_user,article_slug=article.slug)
+                request_user_obj=loggedin_user, article_slug=article.slug)
         }, status=status.HTTP_200_OK)
         notify.article_interaction_liked_or_faved(self.request,article,favorited_by=loggedin_user.profile)
         return message

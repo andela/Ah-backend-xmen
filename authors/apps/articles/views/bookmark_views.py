@@ -31,7 +31,8 @@ class BookmarkAPIView(generics.GenericAPIView):
             if bookmark.article.slug == slug:
                 raise serializers.ValidationError('Article already bookmarked')
         new_bookmark = Bookmark.objects.create(article=article, profile=me)
-        return Response({'message': 'Article added to bookmarks'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Article added to bookmarks'},
+                        status=status.HTTP_200_OK)
 
     def delete(self, request, slug):
         article, me, bookmarks = self.fetch_required_params(request, slug)
