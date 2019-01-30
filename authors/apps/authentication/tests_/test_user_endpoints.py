@@ -83,6 +83,20 @@ class TestUserEndPoints(BaseTestClass):
         resp = self.client.post(reverse('authentication:login'), content_type='application/json',
                                 data=json.dumps(self.verified_user_login_credentials))
         self.assertEqual(resp.status_code, 200)
+    def test_login_user_with_valid_username_succeeds(self):
+        """ 
+        Test user login with valid username and password
+        """
+        resp = self.client.post(reverse('authentication:login'), content_type='application/json',
+                                data=json.dumps(self.verified_user_login_credentials_2))
+        self.assertEqual(resp.status_code, 200)
+    def test_login_user_with_invalid_username_fails(self):
+        """ 
+        Test user login with invalid username and password
+        """
+        resp = self.client.post(reverse('authentication:login'), content_type='application/json',
+                                data=json.dumps(self.invalid_user_login_credentials_2))
+        self.assertEqual(resp.status_code, 400)
 
     def test_login_with_invalid_user_fails(self):
         """ 

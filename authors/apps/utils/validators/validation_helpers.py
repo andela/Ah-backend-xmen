@@ -27,7 +27,7 @@ def validate_username(username):
         raise serializers.ValidationError("Username cannot contain special characters.")
     if len(username.strip()) < 5:
         raise serializers.ValidationError("Username must be longer than 5 characters.")
-    return username
+    return username.strip().lower()
 
 def validate_index(index, slug):
     article = get_object_or_404(Article, slug=slug)
@@ -37,3 +37,29 @@ def validate_index(index, slug):
     if int(index) > article_length:
         raise serializers.ValidationError("Index must not exceed article length.")
     return index
+
+
+def validate_field_exists(field_name, message):
+    """
+    checks if field is none and raises an exception
+    Args:
+       field_name(String): field to check
+       message(String): exception message
+
+    raises ValidationError
+    """
+    if field_name is None:
+        raise serializers.ValidationError(
+                message
+            )
+
+
+def find_email_by_username(username):
+    try:
+        user_object = User.objects.get(
+            username=username.strip().lower())
+        return user_object.email
+    except User.DoesNotExist:
+        raise serializers.ValidationError(
+            'A user with this username and password was not found.'
+            )

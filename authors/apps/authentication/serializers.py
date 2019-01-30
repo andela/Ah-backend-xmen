@@ -1,14 +1,19 @@
 import re
+import uuid
 
 from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from .models import User
-from authors.apps.utils.validators.validation_helpers import validate_password, validate_username
-from authors.apps.utils.messages import error_messages
 
-from .social_auth import SocialAuth
+from authors.apps.utils.messages import error_messages
+from authors.apps.utils.validators.validation_helpers import (validate_password,
+                                                              validate_username,
+                                                              validate_field_exists,
+                                                              find_email_by_username)
+
+from .models import User
 from .register_social import create_social_user
-import uuid
+from .social_auth import SocialAuth
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -104,8 +109,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.CharField(max_length=255)
-    username = serializers.CharField(max_length=255, read_only=True)
+    email = serializers.CharField(max_length=255, required=False)
+    username = serializers.CharField(max_length=255, required=False)
     password = serializers.CharField(max_length=128, write_only=True)
     token = serializers.CharField(max_length=255, read_only=True)
 
@@ -116,34 +121,33 @@ class LoginSerializer(serializers.Serializer):
         # and password and that this combination matches one of the users in
         # our database.
         email = data.get('email', None)
+        username = data.get('username', None)
         password = data.get('password', None)
-
+   
         # As mentioned above, an email is required. Raise an exception if an
         # email is not provided.
-        if email is None:
+        if email is None and username is None:
             raise serializers.ValidationError(
-                error_messages['field required'].format('Email')
+                error_messages['field required'].format('Email or Username')
             )
 
         # As mentioned above, a password is required. Raise an exception if a
         # password is not provided.
-        if password is None:
-            raise serializers.ValidationError(
-                error_messages['field required'].format('Password')
-            )
+        validate_field_exists(
+            password, error_messages['field required'].format('Password'))   
 
         # The `authenticate` method is provided by Django and handles checking
         # for a user that matches this email/password combination. Notice how
         # we pass `email` as the `username` value. Remember that, in our User
         # model, we set `USERNAME_FIELD` as `email`.
-        user = authenticate(username=email, password=password)
+        if username is not None:
+            email = find_email_by_username(username)
 
+        user = authenticate(username=email, password=password)
         # If no user was found matching this email/password combination then
         # `authenticate` will return `None`. Raise an exception in this case.
-        if user is None:
-            raise serializers.ValidationError(
-                'A user with this email and password was not found.'
-            )
+        validate_field_exists(
+            user, 'A user with this email and password was not found.')
 
         # Django provides a flag on our `User` model called `is_active`. The
         # purpose of this flag to tell us whether the user has been banned
