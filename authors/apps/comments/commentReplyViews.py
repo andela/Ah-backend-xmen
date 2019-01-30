@@ -1,8 +1,8 @@
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import ReplyLikeSerializer, ReplyCommentSerializer
+from .serializers import ReplyLikeSerializer, ReplyCommentSerializer, ReplyHistorySerailizer
 from authors.apps.profiles.models import Profile
 from authors.apps.articles.models import Article
 from authors.apps.authentication.models import User
@@ -11,6 +11,8 @@ from django.shortcuts import get_object_or_404
 from .utils import update_obj
 from authors.apps.utils.custom_permissions.permissions import (
     check_if_is_author)
+from .renderers import ReplyJSONRenderer
+from ..utils.custom_permissions.permissions import check_if_can_track_history
 
 
 class CommentReplyView(GenericAPIView):
@@ -184,3 +186,17 @@ class CommentReplyLikeView(GenericAPIView):
         return Response({
             "message": "unliked reply successfully"
         }, status=status.HTTP_200_OK)
+
+
+class ReplyHistoryView(ListAPIView):
+    serializer_class = ReplyHistorySerailizer
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (ReplyJSONRenderer, )
+
+    def get(self, *args, **kwargs):
+        article = get_object_or_404(Article, slug=kwargs.get('slug'))
+        get_object_or_404(Comment, id=kwargs.get('pk'))
+        reply = get_object_or_404(CommentReply, id=kwargs.get('pk'))
+        check_if_can_track_history(article, reply, self.request)
+        serializer = self.serializer_class(reply)
+        return Response(serializer.data, status=status.HTTP_200_OK)

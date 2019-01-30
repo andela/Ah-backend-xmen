@@ -1,18 +1,20 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import generics
 from rest_framework.generics import GenericAPIView
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from authors.apps.articles.models import Article
 from authors.apps.profiles.models import Profile
-from authors.apps.utils.custom_permissions.permissions import \
-    check_if_is_author
-
-from .models import Comment, CommentLike
-from .serializers import CommentLikeSerializer, CommentSerializer
 from .utils import update_obj
 from authors.apps.utils.validators.validation_helpers import validate_index
+from .serializers import (
+    CommentSerializer, CommentLikeSerializer, CommentHistorySerailizer)
+from .models import Comment, CommentLike
+from authors.apps.utils.custom_permissions.permissions import (
+    check_if_is_author, check_if_can_track_history)
+from .renderers import CommentJSONRenderer
 
 from authors.apps.notifications.backends import notify
 
@@ -182,3 +184,16 @@ class CommentLikeView(GenericAPIView):
         return Response({
             "message": "unliked comment successfully"
         }, status=status.HTTP_200_OK)
+
+
+class CommentHistoryView(generics.ListAPIView):
+    serializer_class = CommentHistorySerailizer
+    permission_classes = (IsAuthenticated, )
+    renderer_classes = (CommentJSONRenderer, )
+
+    def get(self, *args, **kwargs):
+        article = get_object_or_404(Article, slug=kwargs.get('slug'))
+        comment = get_object_or_404(Comment, id=kwargs.get('pk'))
+        check_if_can_track_history(article, comment, self.request)
+        serializer = self.serializer_class(comment)
+        return Response(serializer.data, status=status.HTTP_200_OK)

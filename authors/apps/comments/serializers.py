@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Comment, CommentReply, CommentLike, CommentReplyLike
 from authors.apps.articles.serializers import AuthorProfileSerializer
+from .utils import get_edit_history
 
 
 class ReplyCommentSerializer(serializers.ModelSerializer):
@@ -13,7 +14,7 @@ class ReplyCommentSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = AuthorProfileSerializer(read_only=True)
-    
+
     class Meta:
         model = Comment
         fields = ('id', 'createdAt', 'updatedAt', 'body', 'author',
@@ -38,4 +39,25 @@ class ReplyLikeSerializer(serializers.ModelSerializer):
         fields = ('reply_like_by',)
         read_only_fields = ('reply_like_by',)
         model = CommentReplyLike
-  
+
+
+class CommentHistorySerailizer(serializers.ModelSerializer):
+    comment_history = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ('comment_history', )
+
+    def get_comment_history(self, obj):
+        return get_edit_history(obj.comment_history)
+
+
+class ReplyHistorySerailizer(serializers.ModelSerializer):
+    reply_history = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = ('reply_history', )
+        model = CommentReply
+
+    def get_reply_history(self, obj):
+        return get_edit_history(obj.reply_history)
