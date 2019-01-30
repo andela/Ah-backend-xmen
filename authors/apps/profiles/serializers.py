@@ -36,10 +36,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             obj(instance): This is a profile instance of a user
 
         """
-        followers = []
-        for user in list(obj.followers.all()):
-            followers.append(user.username)
-        return len(followers)
+        return len(list(obj.followers.all()))
+            
+        
 
     def get_following(self,obj):
         """
@@ -49,17 +48,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             obj(instance): This is a profile instance of a user
 
         """
-        following = []
-        visitor = None
-        request = self.context.get("request")
-        if not request:
-            return 
-        if not isinstance(request.user, User):
-            return
-        visitor = request.user
-        for profile in visitor.is_following.all():
-            following.append(profile.user.username)
-        return len(following)
+        return len(list(obj.user.is_following.all()))
 
     def get_is_following(self,obj):
         """
