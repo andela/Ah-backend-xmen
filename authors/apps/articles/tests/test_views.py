@@ -4,7 +4,7 @@ from django.urls import reverse
 from authors.apps.articles.models import Article
 from authors.apps.authentication.tests_.test_base_class import BaseTestClass
 from authors.apps.authentication.tests_.test_data import (
-    responses, invalid_request_data
+    responses, invalid_request_data, report_data
 )
 from authors.apps.articles.apps import ArticlesConfig
 
@@ -397,4 +397,51 @@ class ArticleLikeView(BaseTestClass):
     def test_articles_app_instance(self):
         self.assertEqual(ArticlesConfig.name, 'articles')
 
+    def test_reporting_your__on_own_article_fails(self):
+        """
+        Checks if an authenticated user can favortie an article
+        If the article has been favorited, the user is notified that they have
+        already added that article top their favorites list.
+        Args: slug (Django model article instance)
+        
+        Returns  response (Django HTTP Response)
+        """
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+
+                         HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        article = Article.objects.latest('created_at').slug
+        data = {
+            "reason":"Explicit content"
+        }
+        response2 = self.client.post(
+            f'/api/articles/{article}/report',
+            content_type='application/json',
+            data=json.dumps(data),
+            HTTP_AUTHORIZATION=f'Bearer {self.test_user_token}')
+        self.assertEqual(response2.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_reporting_on_another_author_article_succeeds(self):
+        """
+        Checks if an authenticated user can report an article
+        If the user is not the author, the article is reported to 
+        the admins
+        Args: slug (Django model article instance)
+        
+        Returns  response (Django HTTP Response)
+        """
+        self.client.post(reverse('articles:article-create'),
+                         content_type='application/json',
+
+                         HTTP_AUTHORIZATION='Bearer ' + self.test_user_token)
+        article = Article.objects.latest('created_at').slug
+        data = {
+            "reason":"Explicit content"
+        }
+        response2 = self.client.post(
+            f'/api/articles/{article}/report',
+            content_type='application/json',
+            data=json.dumps(data),
+            HTTP_AUTHORIZATION=f'Bearer {self.alt_test_user_token}')
+        self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
   

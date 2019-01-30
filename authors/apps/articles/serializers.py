@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Article, Bookmark, ArticleRating
+from .models import Article, ArticleLikes, Bookmark, ArticleRating, ReportArticle
+from rest_framework.exceptions import NotFound
+from ..authentication.models import User
 from authors.apps.profiles.models import Profile
 from authors.apps.profiles.serializers import UserProfileSerializer
 from authors.apps.utils.estimator import article_read_time
@@ -134,4 +136,15 @@ class FavoriteSerializer(serializers.ModelSerializer):
             'slug',
             'body',
 
+        ]
+
+
+class ReportArticleSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = ReportArticle
+        fields = [
+            'reporter',
+            'reported_article',
+            'reason'
         ]

@@ -71,6 +71,14 @@ class BaseTestClass(TestCase):
                 "password": "testpassworD12"
             }
         }
+
+        self.verified_user2_login_credentials = {
+            "user": {
+                "email": "soultechdev@gmail.com",
+                "password": "testpassworD12"
+            }
+        }
+
         self.verified_user_forgot_password = {
             "user": {
                 "email": "testemail@test.com"
@@ -89,13 +97,22 @@ class BaseTestClass(TestCase):
         self.test_user = User.objects.create_user(
             username='testuser',
             email='testemail@test.com', password='testpassworD12')
+        self.test_user2 = User.objects.create_user(
+            username='soultech',
+            email='soultechdev@gmail.com',
+            password='testpassworD12'
+        )
         
 
         self.client = APIClient()
         sign_up_response = self.client.post(reverse('authentication:login'),
                                             content_type='application/json', data=json.dumps(self.verified_user_login_credentials))
+        signup2 = self.client.post(reverse('authentication:login'),
+                                            content_type='application/json', data=json.dumps(self.verified_user2_login_credentials))
 
         self.test_user_token = sign_up_response.data['token']
+        self.alt_test_user_token = signup2.data.get('token')
+
 
         self.not_author_user=User.objects.create_user(
             username='notauthor',

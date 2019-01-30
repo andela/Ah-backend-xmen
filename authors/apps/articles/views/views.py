@@ -1,16 +1,20 @@
 from rest_framework import generics, status, serializers
-from authors.apps.articles.models import Article, ArticleLikes, ArticleRating
-from authors.apps.articles.serializers import (
-    ArticleSerializer, ArticleUpdateSerializer, ArticleRatingSerializer, FavoriteSerializer
+from ..models import Article, ArticleLikes, Bookmark, ArticleRating
+from django.core.mail import mail_admins
+from django.shortcuts import get_object_or_404
+
+from ..serializers import (
+    ArticleSerializer, ArticleUpdateSerializer, BookmarksSerializer,
+    ArticleRatingSerializer, FavoriteSerializer, ReportArticleSerializer
 )
 from authors.apps.articles.renderers import ArticleJSONRenderer, FavortiesJsonRenderer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from authors.apps.utils.messages import error_messages, favorite_actions_messages
+from authors.apps.utils.messages import error_messages, favorite_actions_messages, escalation_message
 from authors.apps.profiles.models import Profile
 from authors.apps.utils.custom_permissions.permissions import (
-    check_if_is_author
+    check_if_is_author, can_report
 )
 from authors.apps.articles.paginators import ArticleLimitOffSetPagination
 from authors.apps.articles.utils import get_like_status, get_usernames
@@ -287,3 +291,34 @@ class FavoritesView(generics.ListAPIView):
     def get_queryset(self, *args, **kwargs):
         my_profile = self.request.user.profile
         return my_profile.favorited_articles.all()
+
+
+class ReportArticleView(generics.CreateAPIView):
+    """ Escalate an article for review """
+    permission_classes = [IsAuthenticated, ]
+    serializer_class = ReportArticleSerializer
+
+    def get_object(self):
+        article_slug = self.kwargs.get("slug")
+        return get_object_or_404(Article, slug=article_slug)
+    
+    def post(self, *args, **kwargs):
+        data = self.request.data
+        data['reporter'] = self.request.user.pk
+        data['reported_article'] = self.get_object().pk
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        
+        formatted_mail = escalation_message.format(
+            self.request.user.username,
+            self.request.build_absolute_uri(self.get_object().get_absolute_url()),
+            data.get('reason')
+        )
+        can_report(self.get_object(), self.request.user.profile)
+        serializer.save()
+        mail_admins(subject='Attention required!', message=formatted_mail)
+
+        
+        return Response({
+                "message":"Article successfully reported, article will be reviewed.",    
+        }, status=status.HTTP_201_CREATED)
