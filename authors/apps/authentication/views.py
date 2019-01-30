@@ -136,7 +136,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class RequestPasswordResetAPIView(APIView):
+class RequestPasswordResetAPIView(GenericAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = PasswordResetRequestSerializer
@@ -156,7 +156,7 @@ class RequestPasswordResetAPIView(APIView):
         return Response({'message':'Email sent. Please check your inbox for a password reset email.'}, status = status.HTTP_200_OK)
        
 
-class ResetPasswordAPIView(APIView):
+class ResetPasswordAPIView(GenericAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = PasswordResetSerializer
@@ -185,7 +185,7 @@ class ResetPasswordAPIView(APIView):
         return Response({"password-reset":"Your password has been updated"}, status=status.HTTP_200_OK)
         
 
-class FacebookLoginAPIview(APIView):
+class FacebookLoginAPIview(GenericAPIView):
     permission_classes = (AllowAny,)
     serializer_class = FacebookSocialAuthSerializer
     renderer_classes = (UserJSONRenderer,)
@@ -201,7 +201,7 @@ class FacebookLoginAPIview(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
         
 
-class GoogleLoginAPIview(APIView):
+class GoogleLoginAPIview(GenericAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = GoogleSocialAuthSerializer
@@ -217,7 +217,7 @@ class GoogleLoginAPIview(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
         
 
-class TwitterLoginAPIview(APIView):
+class TwitterLoginAPIview(GenericAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = TwitterSocialAuthSerializer
