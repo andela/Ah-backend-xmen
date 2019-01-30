@@ -114,7 +114,7 @@ invalid_user_data = {
 
     'same_username_user' : {
             "user": {
-                "username": "Jacob",
+                "username": "jacob",
                 "email": "jake@gmail.com",
                 "password": "jAcobson10"
             }

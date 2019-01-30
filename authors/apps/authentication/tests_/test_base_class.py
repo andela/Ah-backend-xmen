@@ -15,28 +15,28 @@ class BaseTestClass(TestCase):
     def setUp(self):
         self.user_data = {
             "user": {
-                "username": "Jacob",
+                "username": "jacob",
                 "email": "jake@jake.jake",
                 "password": "JakeJake12"
             }
         }
         self.user_data_weak_password = {
             "user": {
-                "username": "Jacob",
+                "username": "jacob",
                 "email": "jake@jake.jake",
                 "password": "jakejake"
             }
         }
         self.user_data_short_password = {
             "user": {
-                "username": "Jacob",
+                "username": "jacob",
                 "email": "jake@jake.jake",
                 "password": "jake"
             }
         }
         self.user2_data = {
             "user": {
-                "username": "Jacob1",
+                "username": "jacob1",
                 "email": "jake1@jake.jake",
                 "password": "JakeJake12"
             }
@@ -48,14 +48,14 @@ class BaseTestClass(TestCase):
         }
         self.same_email_user = {
             "user": {
-                "username": "Jackson",
+                "username": "jackson",
                 "email": "jake@jake.jake",
                 "password": "jAckson5"
             }
         }
         self.same_username_user = {
             "user": {
-                "username": "Jacob",
+                "username": "jacob",
                 "email": "jake@gmail.com",
                 "password": "jAcobson10"
             }
@@ -68,6 +68,18 @@ class BaseTestClass(TestCase):
         self.verified_user_login_credentials = {
             "user": {
                 "email": "testemail@test.com",
+                "password": "testpassworD12"
+            }
+        } 
+        self.verified_user_login_credentials_2 = {
+            "user": {
+                "username": "testuser1",
+                "password": "testpassworD12"
+            }
+        } 
+        self.invalid_user_login_credentials_2 = {
+            "user": {
+                "username": "testuser10000",
                 "password": "testpassworD12"
             }
         }
