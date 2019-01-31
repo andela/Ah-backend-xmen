@@ -1,11 +1,9 @@
 from rest_framework import generics, status, serializers
-from ..models import Article, ArticleLikes, Bookmark, ArticleRating
 from django.core.mail import mail_admins
-from django.shortcuts import get_object_or_404
-
-from ..serializers import (
-    ArticleSerializer, ArticleUpdateSerializer, BookmarksSerializer,
-    ArticleRatingSerializer, FavoriteSerializer, ReportArticleSerializer
+from authors.apps.articles.models import Article, ArticleLikes, ArticleRating, ReadStats
+from authors.apps.articles.serializers import (
+    ArticleSerializer, ArticleUpdateSerializer, ArticleRatingSerializer, 
+    FavoriteSerializer, ReadStatsSerializer, BookmarksSerializer, ReportArticleSerializer
 )
 from authors.apps.articles.renderers import ArticleJSONRenderer, FavortiesJsonRenderer
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -49,37 +47,6 @@ class ArticleListCreateView(generics.ListCreateAPIView):
         return super(ArticleListCreateView, self).get_permissions()
 
 
-class ArticleUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
-    """ Updates and deletes an article instance """
-    serializer_class = ArticleUpdateSerializer
-    permission_class = (IsAuthenticated,)
-    renderer_classes = (ArticleJSONRenderer,)
-
-    def get_serializer_context(self):
-        return {
-            'request': self.request
-        }
-
-    def get_object(self):
-        slug = self.kwargs.get('slug')
-        return get_object_or_404(Article, slug=slug)
-
-    def perform_update(self, serializer):
-        article = self.get_object()
-        check_if_is_author(article, self.request)
-        serializer.save(
-            author=Profile.objects.get(user=self.request.user)
-        )
-
-    def destroy(self, *args, **kwargs):
-        instance = self.get_object()
-        check_if_is_author(instance, self.request)
-        self.perform_destroy(instance)
-        return Response(
-            {"message": error_messages['delete_msg'].format('Article')},
-            status=status.HTTP_200_OK)
-
-
 class ArticleLikesView(generics.RetrieveUpdateDestroyAPIView):
     """Updates, retrieves and deletes an articlelikes instance"""
     permission_classes = (IsAuthenticated,)
@@ -88,7 +55,6 @@ class ArticleLikesView(generics.RetrieveUpdateDestroyAPIView):
     def put(self, request, slug):
         """
         Updates the article with the reader's feedback
-
         args:
             request (Request object): Django Request context
             slug (Article label): stores and generates a valid URL for the
@@ -97,7 +63,6 @@ class ArticleLikesView(generics.RetrieveUpdateDestroyAPIView):
             HTTP Response message: A dictionary
             HTTP Status code: 201, 200
         """
-
         user = request.user
         article_id = get_object_or_404(Article, slug=slug)
         like_article = request.data.get('like_article', None)
@@ -317,7 +282,6 @@ class ReportArticleView(generics.CreateAPIView):
         serializer.save()
         mail_admins(subject='Attention required!', message=formatted_mail)
 
-        
         return Response({
                 "message":"Article successfully reported, article will be reviewed.",    
         }, status=status.HTTP_201_CREATED)

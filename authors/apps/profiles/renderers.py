@@ -20,3 +20,6 @@ class UserProfileListRenderer(JSONRenderer):
         return json.dumps({
             'profiles':data
         })
+
+class ReadStatsJsonRenderer(AppJSONRenderer):
+    name = 'read_stats'

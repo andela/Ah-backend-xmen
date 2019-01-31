@@ -5,7 +5,8 @@ from .views import (
     UserProfileListView,
     FollowView, 
     FollowersView,
-    FollowingView
+    FollowingView,
+    ReadStatsView
 )
 
 
@@ -15,6 +16,8 @@ urlpatterns = [
     path('<username>/edit', UserProfileUpdateView.as_view(), name='profile-update'),
     path('<username>/follow', FollowView.as_view(), name='follow'),
     path('<username>/following', FollowingView.as_view(), name='following'),
-    path('<username>/followers', FollowersView.as_view(), name='followers')
+    path('<username>/followers', FollowersView.as_view(), name='followers'),
+    
+    path('<username>/readstats', ReadStatsView.as_view(), name='read-stats'),
 
 ]
