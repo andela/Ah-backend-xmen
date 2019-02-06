@@ -2,7 +2,7 @@ from rest_framework import generics, status, serializers
 from django.core.mail import mail_admins
 from authors.apps.articles.models import Article, ArticleLikes, ArticleRating, ReadStats
 from authors.apps.articles.serializers import (
-    ArticleSerializer, ArticleUpdateSerializer, ArticleRatingSerializer, 
+    ArticleSerializer, ArticleUpdateSerializer, ArticleRatingSerializer,
     FavoriteSerializer, ReadStatsSerializer, BookmarksSerializer, ReportArticleSerializer
 )
 from authors.apps.articles.renderers import ArticleJSONRenderer, FavortiesJsonRenderer
