@@ -8,6 +8,7 @@ from django.urls import reverse
 import jwt
 import datetime
 from authors.apps.notifications.utils import permissions
+import urllib.parse
 
 class PasswordResetManager:
     """
@@ -98,9 +99,21 @@ class EmailNotificationDispatch:
         
     def build_and_send(self, request, notification, notification_permission):
         self.receiver_email = notification.receiver.user.email
-        opt_out_url = request.build_absolute_uri(reverse('notifications:perms', kwargs={'permission_type': self.make_token(self.receiver_email, notification_permission)}))
-        opt_out_all_url = request.build_absolute_uri(reverse('notifications:perms', kwargs={'permission_type': self.make_token(self.receiver_email, permissions.RECEIVE_NOTIFICATION_EMAILS)}))
-    
+        opt_out_url = settings.FRONTEND_BASE_URL + \
+                        reverse('notifications:perms', \
+                            kwargs={'permission_type': \
+                                    self.make_token(self.receiver_email, \
+                                    notification_permission)})[4:]
+
+        opt_out_all_url =  settings.FRONTEND_BASE_URL + \
+                            reverse('notifications:perms',\
+                                kwargs={'permission_type': 
+                                self.make_token(self.receiver_email, \
+                                permissions.RECEIVE_NOTIFICATION_EMAILS)})[4:]
+
+        notification.action_link = settings.FRONTEND_BASE_URL + \
+                            urllib.parse.urlparse(
+                                notification.action_link).path[4:]
         context = {
             'username': notification.receiver.user.username,
             'notification_message' : notification.__str__(),
