@@ -22,6 +22,9 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from datetime import datetime
 from django.template.loader import render_to_string
+from django.shortcuts import redirect
+from django.conf import settings
+from urllib.parse import quote
 
 import facebook
 from .social_auth import SocialAuth
@@ -80,14 +83,20 @@ class EmailVerificationAPIView(GenericAPIView):
             user_id = force_bytes(urlsafe_base64_decode(uuid)).decode('utf-8')
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist as e:
-            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+            front_end_url = settings.FRONTEND_BASE_URL + '/signup/'+quote(str(e))
+            return redirect(front_end_url)
+        
         if user is not None and email_verification_token.check_token(user, token):
             user.email_verified = True
             user.email_verification_date = datetime.utcnow()
             user.save()
-            return Response({'message': 'Email verification for {} was completed succesfully'.format(user.email)}, status=status.HTTP_200_OK)
-        return Response({'message': 'Please check the link and try again'}, status=status.HTTP_400_BAD_REQUEST)
+            message = 'Email verification for {} was completed succesfully'.format(user.email)
+            front_end_url = settings.FRONTEND_BASE_URL + '/signup/'+quote(str(message))
+            return redirect(front_end_url)
+        
+        message = 'Please check the link and try again'
+        front_end_url = settings.FRONTEND_BASE_URL + '/signup/'+quote(str(message))
+        return redirect(front_end_url)
 
 
 class LoginAPIView(GenericAPIView):
@@ -167,9 +176,11 @@ class ResetPasswordAPIView(GenericAPIView):
 
         user = reset_manager.get_user_from_token(token)
         if user is not None:
-            return Response({"token":"token is Valid, replace with 'set new password' form."}, status=status.HTTP_200_OK)
+            front_url = settings.FRONTEND_BASE_URL + '/password-reset/' + token
+            return redirect(front_url)
         else:
-            return Response({"token":"token is not valid"}, status=status.HTTP_400_BAD_REQUEST)
+            front_url = settings.FRONTEND_BASE_URL + '/password-reset/invalid-token'
+            return redirect(front_url)    
 
     def put(self, request,token):
 

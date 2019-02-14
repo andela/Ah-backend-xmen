@@ -33,7 +33,7 @@ class TestUserEndPoints(BaseTestClass):
         email_activation_url = message.pop(9)
         resp_verification = self.client.get(
             email_activation_url.split("testserver").pop(1))
-        self.assertEqual(200, resp_verification.status_code)
+        self.assertEqual(302, resp_verification.status_code)
 
     def test_email_verification_fails(self):
         resp = self.client.post(reverse('authentication:signup'),
@@ -50,7 +50,7 @@ class TestUserEndPoints(BaseTestClass):
         """
         resp_verification = self.client.get(
             email_activation_url)
-        self.assertEqual(400, resp_verification.status_code)
+        self.assertEqual(302, resp_verification.status_code)
 
     def test_email_verification_fails_invalid_url_token(self):
         resp = self.client.post(reverse('authentication:signup'),
@@ -74,7 +74,7 @@ class TestUserEndPoints(BaseTestClass):
 
         resp_verification = self.client.get(reverse(
             'authentication:email-verification', args=[self.uuid, self.token+"sdd"]))
-        self.assertEqual(resp_verification.status_code, 400)
+        self.assertEqual(resp_verification.status_code, 302)
 
     def test_login_user_with_valid_data(self):
         """ 
@@ -172,7 +172,7 @@ class TestUserEndPoints(BaseTestClass):
 
         resp = self.client.get(self.reset_password_url,
                                content_type='application/json')
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 302)
 
     def test_user_reset_password_has_valid_token_fails(self):
         resp = self.client.post(reverse('authentication:request-password-reset'),
@@ -185,7 +185,7 @@ class TestUserEndPoints(BaseTestClass):
 
         resp = self.client.get(
             self.reset_password_url_invalid, content_type='application/json')
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 302)
 
     def test_retrieve_user_success(self):
         """This tests for a successful retrival of a registered user"""
