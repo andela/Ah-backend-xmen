@@ -1,12 +1,14 @@
 from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import ( IsAuthenticated,
+  IsAuthenticatedOrReadOnly )
 from rest_framework.response import Response
-from .serializers import ReplyLikeSerializer, ReplyCommentSerializer, ReplyHistorySerailizer
+from .serializers import (ReplyLikeSerializer, ReplyCommentSerializer,
+    ReplyHistorySerailizer )
 from authors.apps.profiles.models import Profile
 from authors.apps.articles.models import Article
 from authors.apps.authentication.models import User
-from .models import CommentReplyLike, Comment, CommentLike, CommentReply
+from .models import CommentReplyLike, Comment, CommentReply
 from django.shortcuts import get_object_or_404
 from .utils import update_obj
 from authors.apps.utils.custom_permissions.permissions import (
@@ -18,7 +20,7 @@ from ..utils.custom_permissions.permissions import check_if_can_track_history
 class CommentReplyView(GenericAPIView):
 
     serializer_class = ReplyCommentSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def post(self, *args, **kwargs):
         """
@@ -59,7 +61,7 @@ class CommentReplyDetailView(GenericAPIView):
     are authenticated
     """
     serializer_class = ReplyCommentSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get(self, *args, **kwargs):
         """
@@ -114,7 +116,7 @@ class CommentReplyDetailView(GenericAPIView):
 
 class CommentReplyLikeView(GenericAPIView):
     serializer_class = ReplyLikeSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def put(self, *args, **kwargs):
         """
@@ -200,3 +202,4 @@ class ReplyHistoryView(ListAPIView):
         check_if_can_track_history(article, reply, self.request)
         serializer = self.serializer_class(reply)
         return Response(serializer.data, status=status.HTTP_200_OK)
+

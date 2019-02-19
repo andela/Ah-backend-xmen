@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from authors.apps.utils.custom_permissions.permissions import \
@@ -89,7 +89,7 @@ class FollowersView(generics.ListAPIView):
     followers of a given user. 
     """
     serializer_class = ProfileListSerializer
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticatedOrReadOnly,]
     renderer_classes = [UserProfileListRenderer,]
 
 
@@ -108,7 +108,7 @@ class FollowingView(generics.ListAPIView):
     a given user is following.
     """
     serializer_class = ProfileListSerializer
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticatedOrReadOnly,]
     renderer_classes = [UserProfileListRenderer,]
 
     def get_queryset(self):
