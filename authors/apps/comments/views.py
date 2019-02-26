@@ -2,9 +2,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.generics import GenericAPIView
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (IsAuthenticatedOrReadOnly,   
+    IsAuthenticated )
 from rest_framework.response import Response
-
 from authors.apps.articles.models import Article
 from authors.apps.profiles.models import Profile
 from .utils import update_obj
@@ -15,15 +15,16 @@ from .models import Comment, CommentLike
 from authors.apps.utils.custom_permissions.permissions import (
     check_if_is_author, check_if_can_track_history)
 from .renderers import CommentJSONRenderer
-
 from authors.apps.notifications.backends import notify
+
 
 class CommentView(GenericAPIView):
     """
-    Allows authenticated users to post a comment on an articles 
+    Allows authenticated users to post a comment on an
+    articles
     and also view all comments on an article
     """
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = CommentSerializer
 
     def post(self, request, slug):
@@ -80,7 +81,7 @@ class CommentDetailView(GenericAPIView):
 
     """
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get(self, *args, **kwargs):
         """
@@ -120,7 +121,7 @@ class CommentDetailView(GenericAPIView):
 
 class CommentLikeView(GenericAPIView):
     serializer_class = CommentLikeSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def put(self, *args, **kwargs):
         """
