@@ -102,6 +102,7 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
 class ProfileListSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
+    is_following = serializers.SerializerMethodField()
     class Meta:
         model = Profile
         fields = [
@@ -109,8 +110,16 @@ class ProfileListSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'bio',
-            'image'
+            'image', 
+            'is_following'
         ]
     
     def get_username(self, obj):
         return f"{obj.user.username}"
+
+    def get_is_following(self,obj):
+        """
+        Sets the following status in a user's profile
+        """
+        visitor = self.context['request'].user
+        return True if visitor in obj.followers.all() else False
