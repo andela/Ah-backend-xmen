@@ -128,7 +128,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         token = jwt.encode(
             {
                 'user_data': token_string,
-                'exp': date_time.now() + timedelta(minutes=30)
+                'exp': date_time.now() + timedelta(hours=5)
             }, settings.SECRET_KEY, algorithm='HS256'
         )
         return token.decode('utf-8')
