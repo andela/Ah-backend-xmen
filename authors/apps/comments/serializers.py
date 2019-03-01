@@ -9,7 +9,8 @@ class ReplyCommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CommentReply
-        fields = ('id', 'reply_body', 'repliedOn', 'updatedOn', 'author')
+        fields = ('id', 'reply_body', 'repliedOn', 'updatedOn','comment', 'author',)
+        read_only_fields=('comment',)
 
 
 class CommentSerializer(serializers.ModelSerializer):
