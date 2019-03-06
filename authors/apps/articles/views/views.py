@@ -175,7 +175,7 @@ class ArticleLikesView(generics.RetrieveUpdateDestroyAPIView):
 class TagListAPIView(generics.ListAPIView):
     """ Create a view that is used to fetch all the tags """
     pagination_class = None
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     
     def get(self, request):
         tags_set = set()
