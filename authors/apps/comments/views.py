@@ -135,7 +135,7 @@ class CommentLikeView(GenericAPIView):
         self.comment = get_object_or_404(Comment, pk=kwargs.get("pk"))
         self.userProfile = get_object_or_404(Profile, user=self.request.user)
         try:
-            CommentLike.objects.get(liked_by=self.userProfile)
+            CommentLike.objects.get(liked_by=self.userProfile,comment_id=self.comment)
         except CommentLike.DoesNotExist:
             serializer = self.serializer_class(data={})
             serializer.is_valid(raise_exception=True)

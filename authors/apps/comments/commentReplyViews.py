@@ -133,7 +133,7 @@ class CommentReplyLikeView(GenericAPIView):
                 Profile, user=self.request.user)
             self.commentReply = get_object_or_404(
                 CommentReply, pk=kwargs.get("reply_id"))
-            CommentReplyLike.objects.get(reply_like_by=self.userProfile)
+            CommentReplyLike.objects.get(reply_like_by=self.userProfile,comment_reply_id=self.commentReply)
            
         except CommentReplyLike.DoesNotExist:
             serializer = self.serializer_class(data={})
